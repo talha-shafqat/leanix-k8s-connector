@@ -11,11 +11,13 @@ import (
 
 func main() {
 	var kubeconfig *string
+	var clusterName *string
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster")
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -32,9 +34,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	nodes, err := kubernetes.Nodes()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// orchestrationFactSheet := NewOrchestrationFactSheet()
-	factSheets := GenerateFactSheets(deployments.Items)
+	orchestrationFactSheet := NewOrchestrationFactSheet(
+		*clusterName,
+		NewKubernetesNodeInfo(nodes),
+	)
+	factSheets := []FactSheet{orchestrationFactSheet}
+	for _, fs := range GenerateFactSheets(deployments.Items) {
+		factSheets = append(factSheets, fs)
+	}
+
 	factSheetJSON := map[string]interface{}{
 		"ITComponent": factSheets,
 	}

@@ -5,10 +5,10 @@ type FactSheet map[string]interface{}
 
 // KubernetesNodeInfo holds meta information about a kubernetes cluster
 type KubernetesNodeInfo struct {
-	DataCenter       string
-	AvailabilityZone string
-	NumberNodes      string
-	TypeNodes        []string
+	DataCenter        string
+	AvailabilityZones []string
+	NumberNodes       int
+	NodeTypes         []string
 }
 
 // Content holds paths for the different json files
