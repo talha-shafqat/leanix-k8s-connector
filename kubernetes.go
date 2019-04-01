@@ -3,7 +3,8 @@ package main
 import (
 	"strings"
 
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -27,7 +28,7 @@ func NewKubernetesAPI(config *rest.Config) (*KubernetesAPI, error) {
 }
 
 // Deployments returns a list of deployments filted by the given blacklisted namespaces
-func (k *KubernetesAPI) Deployments(blacklist []string) (*v1.DeploymentList, error) {
+func (k *KubernetesAPI) Deployments(blacklist []string) (*appsv1.DeploymentList, error) {
 	fieldSelector := BlacklistFieldSelector(blacklist)
 	deployments, err := k.Client.AppsV1().Deployments("").List(metav1.ListOptions{
 		FieldSelector: fieldSelector,
@@ -36,6 +37,15 @@ func (k *KubernetesAPI) Deployments(blacklist []string) (*v1.DeploymentList, err
 		return nil, err
 	}
 	return deployments, nil
+}
+
+// Nodes gets the list of worker nodes (kubelets)
+func (k *KubernetesAPI) Nodes() (*corev1.NodeList, error) {
+	nodes, err := k.Client.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return nodes, nil
 }
 
 // BlacklistFieldSelector builds a Field Selector string to filter the reponse to not
