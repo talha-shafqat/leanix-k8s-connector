@@ -1,0 +1,5 @@
+{
+    "manifest": "<location of optional manifest file, containing any run-time overwrites to the manifest registered for this integration>",
+    "factSheets": "<location of a json file containing fact sheet updates>",
+    "relations": "<location of a json file containing the relationship updates>"
+}

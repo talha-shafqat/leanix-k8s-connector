@@ -1,0 +1,25 @@
+{
+    // ITComponent
+    "<externalFactSheetType>": [
+        {
+            "clusterName": "<passed as env var>",
+            "type": "Kubernetes",
+            "subFactSheetType": "Orchestration",
+            "cloudProvider": "<best effort (from nodes name?) or env var>",
+            "dataCenter": "<from failure-domain.beta.kubernetes.io/region on node(s)>",
+            "availabilityZone": "<from failure-domain.beta.kubernetes.io/zone on node(s)>",
+            "numberNodes": "<size(list nodes)>",
+            "typeNodes": ["<beta.kubernetes.io/instance-type on node>"],
+            "cost": "not for MVP?",
+            "currency": "not for MVP?"
+        },
+        {
+            // UID: <object uid>
+            "<externalNameOfExternalId>": "<externalValue>",
+            // <labelKey>: <labelValue>
+            "<externalNameOfSingleValueField>": "<externalValue>"
+            // any other field to follow
+        }
+    ],
+    // and repeat for various external fact sheet types
+}
