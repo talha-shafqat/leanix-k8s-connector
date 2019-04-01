@@ -3,6 +3,9 @@ package main
 // FactSheet represents a Fact Sheet in the form it is stored in the json file
 type FactSheet map[string]interface{}
 
+// Relation represents a Relation in the form it is stored in the json file
+type Relation map[string]interface{}
+
 // KubernetesNodeInfo holds meta information about a kubernetes cluster
 type KubernetesNodeInfo struct {
 	DataCenter        string

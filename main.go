@@ -44,14 +44,21 @@ func main() {
 		NewKubernetesNodeInfo(nodes),
 	)
 	factSheets := []FactSheet{orchestrationFactSheet}
+	deploymentUIDs := make([]interface{}, 0)
 	for _, fs := range GenerateFactSheets(deployments.Items) {
 		factSheets = append(factSheets, fs)
+		deploymentUIDs = append(deploymentUIDs, fs["uid"])
 	}
 
 	factSheetJSON := map[string]interface{}{
 		"ITComponent": factSheets,
 	}
 	err = WriteJSONFile(factSheetJSON, "factSheets.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	relationJSON := Relations(orchestrationFactSheet["clusterName"].(string), deploymentUIDs)
+	err = WriteJSONFile(relationJSON, "relations.json")
 	if err != nil {
 		log.Fatal(err)
 	}
