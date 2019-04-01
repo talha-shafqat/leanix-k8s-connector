@@ -28,8 +28,7 @@ func NewKubernetesAPI(config *rest.Config) (*KubernetesAPI, error) {
 
 // Deployments returns a list of deployments filted by the given blacklisted namespaces
 func (k *KubernetesAPI) Deployments(blacklist []string) (*v1.DeploymentList, error) {
-	namespaceSelectors := Prefix(blacklist, "metadata.namespace!=")
-	fieldSelector := strings.Join(namespaceSelectors, ",")
+	fieldSelector := BlacklistFieldSelector(blacklist)
 	deployments, err := k.Client.AppsV1().Deployments("").List(metav1.ListOptions{
 		FieldSelector: fieldSelector,
 	})
@@ -37,6 +36,13 @@ func (k *KubernetesAPI) Deployments(blacklist []string) (*v1.DeploymentList, err
 		return nil, err
 	}
 	return deployments, nil
+}
+
+// BlacklistFieldSelector builds a Field Selector string to filter the reponse to not
+// include resources, that live in the blacklisted namespaces.
+func BlacklistFieldSelector(blacklist []string) string {
+	namespaceSelectors := Prefix(blacklist, "metadata.namespace!=")
+	return strings.Join(namespaceSelectors, ",")
 }
 
 // Prefix return a new list where all items are prefixed with the string given as prefix

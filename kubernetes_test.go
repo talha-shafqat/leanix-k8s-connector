@@ -7,45 +7,35 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	testclient "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestDeployments(t *testing.T) {
 	// create a dummy deployment
 	dummyDeploys := []runtime.Object{
 		&v1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "myapp"}},
+		&v1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: "prod", Name: "wordpress"}},
 	}
 	k := KubernetesAPI{
-		Client: testclient.NewSimpleClientset(dummyDeploys...),
+		Client: fake.NewSimpleClientset(dummyDeploys...),
 	}
-	blacklist := []string{"kube-system"}
-	deploymentList, err := k.Deployments(blacklist)
+	// Since the Field Selector functionality is done server side, the fake client
+	// does not support it. So we can not test with blacklisting here.
+	deploymentList, err := k.Deployments([]string{})
 	if err != nil {
 		t.Error(err)
 	}
 	deployments := deploymentList.Items
 
-	assert.Len(t, deployments, 1)
+	assert.Len(t, deployments, 2)
 }
 
-func TestDeployments_FiltersBlacklistedNamespaces(t *testing.T) {
-	// create a dummy deployment
-	dummyDeploys := []runtime.Object{
-		&v1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "myapp"}},
-		&v1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: "kube-system", Name: "system-app"}},
-	}
-	k := KubernetesAPI{
-		Client: testclient.NewSimpleClientset(dummyDeploys...),
-	}
-	blacklist := []string{"kube-system"}
-	deploymentList, err := k.Deployments(blacklist)
-	if err != nil {
-		t.Error(err)
-	}
-	deployments := deploymentList.Items
+func TestBlacklistFieldSelector(t *testing.T) {
+	blacklist := []string{"kube-system", "private"}
 
-	assert.Len(t, deployments, 1)
-	assert.Equal(t, deployments[0].Name, "myapp")
+	fieldSelector := BlacklistFieldSelector(blacklist)
+
+	assert.Equal(t, "metadata.namespace!=kube-system,metadata.namespace!=private", fieldSelector)
 }
 
 func TestPrefix(t *testing.T) {
