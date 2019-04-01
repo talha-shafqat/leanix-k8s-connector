@@ -1,23 +1,23 @@
 package main
 
-import apps "k8s.io/api/apps/v1"
+import appsv1 "k8s.io/api/apps/v1"
 
 // NewOrchestrationFactSheet creates a new orchestration FactSheet, which
 // represents the kubernetes cluster.
-func NewOrchestrationFactSheet(clusterName string, nodeInfo KubernetesNodeInfo) FactSheet {
+func NewOrchestrationFactSheet(clusterName string, nodeInfo *KubernetesNodeInfo) FactSheet {
 	fs := make(FactSheet)
 	fs["clusterName"] = clusterName
 	fs["type"] = "Kubernetes"
 	fs["subFactSheetType"] = "Orchestration"
 	fs["dataCenter"] = nodeInfo.DataCenter
-	fs["availabilityZone"] = nodeInfo.AvailabilityZone
+	fs["availabilityZones"] = nodeInfo.AvailabilityZones
 	fs["numberNodes"] = nodeInfo.NumberNodes
-	fs["typeNodes"] = nodeInfo.TypeNodes
+	fs["nodeTypes"] = nodeInfo.NodeTypes
 	return fs
 }
 
 // NewFactSheet creates a new Fact Sheet from a deployment
-func NewFactSheet(d apps.Deployment) FactSheet {
+func NewFactSheet(d appsv1.Deployment) FactSheet {
 	fs := make(FactSheet)
 	fs["uid"] = d.UID
 	fs["name"] = d.Name
@@ -29,7 +29,7 @@ func NewFactSheet(d apps.Deployment) FactSheet {
 
 // GenerateFactSheets takes a list of deployments extracts the uid, name and labels into
 // a map.
-func GenerateFactSheets(deployments []apps.Deployment) []FactSheet {
+func GenerateFactSheets(deployments []appsv1.Deployment) []FactSheet {
 	factSheets := make([]FactSheet, 0)
 	for _, d := range deployments {
 		factSheets = append(factSheets, NewFactSheet(d))
