@@ -1,7 +1,7 @@
 GOARCH=amd64
 GOOS=linux
 GOVERSION=1.12
-PROJECT=kubernetes-connector
+PROJECT=leanix-k8s-connector
 
 BUILD_CMD=docker run \
 		--rm \
