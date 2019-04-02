@@ -28,8 +28,8 @@ func NewKubernetesAPI(config *rest.Config) (*KubernetesAPI, error) {
 }
 
 // Deployments returns a list of deployments filted by the given blacklisted namespaces
-func (k *KubernetesAPI) Deployments(blacklist []string) (*appsv1.DeploymentList, error) {
-	fieldSelector := BlacklistFieldSelector(blacklist)
+func (k *KubernetesAPI) Deployments(blacklistedNamespaces []string) (*appsv1.DeploymentList, error) {
+	fieldSelector := BlacklistFieldSelector(blacklistedNamespaces)
 	deployments, err := k.Client.AppsV1().Deployments("").List(metav1.ListOptions{
 		FieldSelector: fieldSelector,
 	})

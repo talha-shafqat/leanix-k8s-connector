@@ -22,7 +22,7 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster")
-	verbose = flag.Bool("verbose", false, "Verbose log output.")
+	verbose = flag.Bool("verbose", false, "verbose log output")
 	flag.Parse()
 	err := InitLogger(*verbose)
 	if err != nil {
@@ -43,10 +43,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	blacklist := []string{"kube-system"}
-	log.Debugf("Namespace blacklist: %v", blacklist)
+	blacklistedNamespaces := []string{"kube-system"}
+	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
 	log.Debug("Get deployment list...")
-	deployments, err := kubernetes.Deployments(blacklist)
+	deployments, err := kubernetes.Deployments(blacklistedNamespaces)
 	if err != nil {
 		log.Fatal(err)
 	}
