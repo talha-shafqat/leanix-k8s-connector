@@ -50,8 +50,8 @@ func (k *KubernetesAPI) Nodes() (*corev1.NodeList, error) {
 
 // BlacklistFieldSelector builds a Field Selector string to filter the reponse to not
 // include resources, that live in the blacklisted namespaces.
-func BlacklistFieldSelector(blacklist []string) string {
-	namespaceSelectors := Prefix(blacklist, "metadata.namespace!=")
+func BlacklistFieldSelector(blacklistedNamespaces []string) string {
+	namespaceSelectors := Prefix(blacklistedNamespaces, "metadata.namespace!=")
 	return strings.Join(namespaceSelectors, ",")
 }
 
