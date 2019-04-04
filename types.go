@@ -11,9 +11,9 @@ type ConnectorOutput struct {
 
 // KubernetesObject describes an object that is read from the kubernetes api
 type KubernetesObject struct {
-	Type string
-	ID   string
-	Data map[string]interface{}
+	Type string                 `json:"type,omitempty"`
+	ID   string                 `json:"id,omitempty"`
+	Data map[string]interface{} `json:"data,omitempty"`
 }
 
 // KubernetesNodeInfo holds meta information about a kubernetes cluster
