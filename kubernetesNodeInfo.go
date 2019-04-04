@@ -3,10 +3,10 @@ package main
 import corev1 "k8s.io/api/core/v1"
 
 // NewKubernetesNodeInfo creates a combined info struct from a list of nodes
-func NewKubernetesNodeInfo(nodes *corev1.NodeList) *KubernetesNodeInfo {
+func NewKubernetesNodeInfo(nodes *corev1.NodeList) KubernetesNodeInfo {
 	items := nodes.Items
 	if len(items) == 0 {
-		return &KubernetesNodeInfo{}
+		return KubernetesNodeInfo{}
 	}
 	availabilityZones := NewStringSet()
 	nodeTypes := NewStringSet()
@@ -16,7 +16,7 @@ func NewKubernetesNodeInfo(nodes *corev1.NodeList) *KubernetesNodeInfo {
 		nodeTypes.Add(n.Labels["beta.kubernetes.io/instance-type"])
 	}
 
-	return &KubernetesNodeInfo{
+	return KubernetesNodeInfo{
 		DataCenter:        items[0].Labels["failure-domain.beta.kubernetes.io/region"],
 		AvailabilityZones: availabilityZones.Items(),
 		NumberNodes:       len(items),
