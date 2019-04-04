@@ -7,7 +7,7 @@ import (
 
 // WriteJSONFile marshals data and writes it with identation to the target filename
 func WriteJSONFile(input interface{}, filename string) error {
-	b, err := json.MarshalIndent(input, "", "    ")
+	b, err := json.MarshalIndent(input, "", "  ")
 	if err != nil {
 		return err
 	}
