@@ -10,17 +10,30 @@ import (
 )
 
 func TestWriteJSONFile(t *testing.T) {
-	data := map[string][]map[string]interface{}{
-		"ITComponent": []map[string]interface{}{
-			{
-				"name":                   "myapp",
-				"uid":                    "a49ef9d4-5201-11e9-8647-d663bd873d93",
-				"app.kubernetes.io/name": "myapp",
+	data := ConnectorOutput{
+		ConnectorID:        "leanix-k8s-connector",
+		ConnectorVersion:   "0.0.1",
+		IntegrationVersion: "3",
+		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
+		Data: []KubernetesObject{
+			KubernetesObject{
+				ID:   "my-cluster",
+				Type: "cluster",
+				Data: map[string]interface{}{
+					"availabilityZones": []interface{}{"0"},
+					"clusterName":       "my-cluster",
+					"dataCenter":        "westeurope",
+					"nodeTypes":         []interface{}{"Standard_D4s_v3"},
+					// Cast to float64 because unmarshaling uses float64 when interface{} is used
+					"numberNodes": float64(3),
+				},
 			},
-			{
-				"name":                   "otherapp",
-				"uid":                    "bb53805a-5201-11e9-8647-d663bd873d93",
-				"app.kubernetes.io/name": "otherapp",
+			KubernetesObject{
+				ID:   "a49ef9d4-5201-11e9-8647-d663bd873d93",
+				Type: "deployment",
+				Data: map[string]interface{}{
+					"app.kubernetes.io/name": "myapp",
+				},
 			},
 		},
 	}
@@ -28,7 +41,7 @@ func TestWriteJSONFile(t *testing.T) {
 	WriteJSONFile(data, filename)
 	defer os.Remove(filename)
 	outputFile, _ := ioutil.ReadFile(filename)
-	var outputFileData map[string][]map[string]interface{}
+	var outputFileData ConnectorOutput
 	err := json.Unmarshal(outputFile, &outputFileData)
 	if err != nil {
 		t.Error(err)
