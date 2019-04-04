@@ -35,15 +35,3 @@ clean:
 
 build:
 	$(BUILD_CMD)
-
-bindata:
-	docker run \
-		--rm \
-		--name $(PROJECT)-bindata \
-		-e GOARCH=$(GOARCH) \
-		-e GOOS=$(GOOS) \
-		-v $(PWD):/tmp/$(PROJECT) \
-		-w /tmp/$(PROJECT) \
-		leanix/go-bindata \
-		go-bindata config
-
