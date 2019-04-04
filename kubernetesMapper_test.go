@@ -3,9 +3,12 @@ package main
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func TestNewKubernetesNodeInfo(t *testing.T) {
@@ -66,4 +69,58 @@ func TestNewClusterKubernetesObject(t *testing.T) {
 	assert.Equal(t, nodeInfo.AvailabilityZones, cluster.Data["availabilityZones"])
 	assert.Equal(t, nodeInfo.NodeTypes, cluster.Data["nodeTypes"])
 	assert.Equal(t, nodeInfo.NumberNodes, cluster.Data["numberNodes"])
+}
+
+func TestMapDeployments(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	otherAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	deployments := &appsv1.DeploymentList{
+		Items: []appsv1.Deployment{
+			newDeployment("myapp", myAppID, map[string]string{
+				"app.kubernetes.io/name": "myapp",
+			}),
+			newDeployment("otherapp", otherAppID, map[string]string{
+				"app.kubernetes.io/name": "otherapp",
+			}),
+		},
+	}
+
+	ko := MapDeployments(deployments)
+
+	assert.Len(t, ko, 2)
+	assert.Equal(t, ko[0].ID, myAppID)
+	assert.Equal(t, ko[1].ID, otherAppID)
+}
+
+func TestMapDeployment(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	deployment := newDeployment("myapp", myAppID, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+
+	ko := MapDeployment(deployment)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "deployment")
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+}
+
+func newDeployment(name string, uuid uuid.UUID, labels map[string]string) appsv1.Deployment {
+	uid := types.UID(uuid.String())
+	return appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   name,
+			UID:    uid,
+			Labels: labels,
+		},
+	}
 }

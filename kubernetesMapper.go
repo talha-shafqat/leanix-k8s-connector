@@ -1,6 +1,9 @@
 package main
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+)
 
 // NewKubernetesNodeInfo creates a combined info struct from a list of nodes
 func NewKubernetesNodeInfo(nodes *corev1.NodeList) KubernetesNodeInfo {
@@ -37,4 +40,26 @@ func NewClusterKubernetesObject(clusterName string, nodeInfo KubernetesNodeInfo)
 			"numberNodes":       nodeInfo.NumberNodes,
 		},
 	}
+}
+
+// MapDeployments maps a kubernetes deployment list to a list of KubernetesObjects
+func MapDeployments(deployments *appsv1.DeploymentList) []KubernetesObject {
+	kubernetesObjects := make([]KubernetesObject, len(deployments.Items))
+	for i, d := range deployments.Items {
+		kubernetesObjects[i] = MapDeployment(d)
+	}
+	return kubernetesObjects
+}
+
+// MapDeployment maps a single kubernetes deployment to an KubernetesObject
+func MapDeployment(deployment appsv1.Deployment) KubernetesObject {
+	kubernetesObject := KubernetesObject{
+		ID:   string(deployment.UID),
+		Type: "deployment",
+		Data: make(map[string]interface{}),
+	}
+	for k, v := range deployment.Labels {
+		kubernetesObject.Data[k] = v
+	}
+	return kubernetesObject
 }
