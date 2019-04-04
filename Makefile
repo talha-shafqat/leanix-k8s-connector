@@ -1,6 +1,6 @@
-GOARCH=amd64
-GOOS=linux
-GOVERSION=1.12
+GOARCH := amd64
+GOOS := linux
+GOVERSION := 1.12
 PROJECT=leanix-k8s-connector
 
 BUILD_CMD=docker run \
