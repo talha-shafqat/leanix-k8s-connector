@@ -45,12 +45,14 @@ func main() {
 	}
 	blacklistedNamespaces := []string{"kube-system"}
 	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
+
 	log.Debug("Get deployment list...")
 	deployments, err := kubernetes.Deployments(blacklistedNamespaces)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Debug("Getting deployment list done.")
+
 	log.Debug("Listing nodes...")
 	nodes, err := kubernetes.Nodes()
 	if err != nil {
@@ -58,37 +60,32 @@ func main() {
 	}
 	log.Debug("Listing nodes done.")
 
-	log.Debug("Building orchestration Fact Sheet from kubernetes nodes...")
-	orchestrationFactSheet := NewOrchestrationFactSheet(
+	log.Debug("Map nodes to kubernetes object")
+	clusterKubernetesObject := NewClusterKubernetesObject(
 		*clusterName,
 		NewKubernetesNodeInfo(nodes),
 	)
-	log.Debug("Building orchestration Fact Sheet done.")
-	factSheets := []FactSheet{orchestrationFactSheet}
-	deploymentUIDs := make([]interface{}, 0)
-	log.Debug("Generating Fact Sheets from kubernetes deployments...")
-	for _, fs := range GenerateFactSheets(deployments.Items) {
-		factSheets = append(factSheets, fs)
-		deploymentUIDs = append(deploymentUIDs, fs["uid"])
-	}
-	log.Debug("Generating Fact Sheets from kubernetes deployments done.")
 
-	factSheetJSON := map[string]interface{}{
-		"ITComponent": factSheets,
+	log.Debug("Map deployments to kubernetes objects")
+	deploymentKubernetesObjects := MapDeployments(deployments)
+
+	kubernetesObjects := make([]KubernetesObject, 0)
+	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
+	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
+
+	connectorOutput := ConnectorOutput{
+		ConnectorID:        "leanix-k8s-connector",
+		ConnectorVersion:   "0.0.1",
+		IntegrationVersion: "3",
+		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
+		Data:               kubernetesObjects,
 	}
-	log.Debug("Write factSheets.json to disk...")
-	err = WriteJSONFile(factSheetJSON, "factSheets.json")
+
+	log.Debug("Write output.json file.")
+	err = WriteJSONFile(connectorOutput, "output.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("Write factSheets.json to disk done.")
-	log.Debug("Write relations.json to disk...")
-	relationJSON := Relations(orchestrationFactSheet["clusterName"].(string), deploymentUIDs)
-	err = WriteJSONFile(relationJSON, "relations.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Debug("Write relations.json to disk done.")
 }
 
 // InitLogger initialise the logger for stdout and log file
