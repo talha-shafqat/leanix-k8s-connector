@@ -94,8 +94,8 @@ func TestMapDeployments(t *testing.T) {
 	ko := MapDeployments(deployments)
 
 	assert.Len(t, ko, 2)
-	assert.Equal(t, ko[0].ID, myAppID)
-	assert.Equal(t, ko[1].ID, otherAppID)
+	assert.Equal(t, ko[0].ID, myAppID.String())
+	assert.Equal(t, ko[1].ID, otherAppID.String())
 }
 
 func TestMapDeployment(t *testing.T) {
