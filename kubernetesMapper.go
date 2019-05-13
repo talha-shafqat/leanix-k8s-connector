@@ -61,5 +61,6 @@ func MapDeployment(deployment appsv1.Deployment) KubernetesObject {
 	for k, v := range deployment.Labels {
 		kubernetesObject.Data[k] = v
 	}
+	kubernetesObject.Data["isRedundant"] = deployment.Status.Replicas > 1
 	return kubernetesObject
 }

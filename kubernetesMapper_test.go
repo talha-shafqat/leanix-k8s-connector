@@ -82,10 +82,10 @@ func TestMapDeployments(t *testing.T) {
 	}
 	deployments := &appsv1.DeploymentList{
 		Items: []appsv1.Deployment{
-			newDeployment("myapp", myAppID, map[string]string{
+			newDeployment("myapp", myAppID, 1, map[string]string{
 				"app.kubernetes.io/name": "myapp",
 			}),
-			newDeployment("otherapp", otherAppID, map[string]string{
+			newDeployment("otherapp", otherAppID, 2, map[string]string{
 				"app.kubernetes.io/name": "otherapp",
 			}),
 		},
@@ -98,12 +98,12 @@ func TestMapDeployments(t *testing.T) {
 	assert.Equal(t, ko[1].ID, otherAppID.String())
 }
 
-func TestMapDeployment(t *testing.T) {
+func TestMapDeployment_singleReplica(t *testing.T) {
 	myAppID, err := uuid.NewRandom()
 	if err != nil {
 		t.Error(err)
 	}
-	deployment := newDeployment("myapp", myAppID, map[string]string{
+	deployment := newDeployment("myapp", myAppID, 1, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
 
@@ -112,15 +112,36 @@ func TestMapDeployment(t *testing.T) {
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], false)
 }
 
-func newDeployment(name string, uuid uuid.UUID, labels map[string]string) appsv1.Deployment {
+func TestMapDeployment_mutlipleReplicas(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+
+	ko := MapDeployment(deployment)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "deployment")
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], true)
+}
+
+func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[string]string) appsv1.Deployment {
 	uid := types.UID(uuid.String())
 	return appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			UID:    uid,
 			Labels: labels,
+		},
+		Status: appsv1.DeploymentStatus{
+			Replicas: replicas,
 		},
 	}
 }
