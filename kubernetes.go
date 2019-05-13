@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -37,6 +38,52 @@ func (k *KubernetesAPI) Deployments(blacklistedNamespaces []string) (*appsv1.Dep
 		return nil, err
 	}
 	return deployments, nil
+}
+
+// DeploymentsOnNodes returns a list of deployments filted by the given blacklisted namespaces
+// and the nodes the deploment pods are running on
+func (k *KubernetesAPI) DeploymentsOnNodes(blacklistedNamespaces []string) (*appsv1.DeploymentList, *[]corev1.Node, error) {
+	deployments, err := k.Deployments(blacklistedNamespaces)
+	if err != nil {
+		return nil, nil, err
+	}
+	nodeNames := NewStringSet()
+	for _, d := range deployments.Items {
+		pods, err := k.Pods(&d)
+		if err != nil {
+			return nil, nil, err
+		}
+		for _, p := range pods.Items {
+			nodeNames.Add(p.Spec.NodeName)
+		}
+	}
+	nodes, err := k.Nodes()
+	if err != nil {
+		return nil, nil, err
+	}
+	deploymentNodes := make([]corev1.Node, 0)
+	for _, n := range nodes.Items {
+		if nodeNames.Contains(n.Name) {
+			deploymentNodes = append(deploymentNodes, n)
+		}
+	}
+	return deployments, &deploymentNodes, nil
+}
+
+// Pods retuns a list of pods matching the selectors of the given deployment
+func (k *KubernetesAPI) Pods(deployment *appsv1.Deployment) (*corev1.PodList, error) {
+	labelMatcher := make([]string, 0)
+	for label, val := range deployment.Spec.Selector.MatchLabels {
+		labelMatcher = append(labelMatcher, fmt.Sprintf("%s=%s", label, val))
+	}
+	selector := strings.Join(labelMatcher, ",")
+	pods, err := k.Client.CoreV1().Pods("").List(metav1.ListOptions{
+		LabelSelector: selector,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return pods, nil
 }
 
 // Nodes gets the list of worker nodes (kubelets)
