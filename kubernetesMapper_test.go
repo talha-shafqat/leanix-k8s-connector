@@ -98,6 +98,33 @@ func TestMapDeployments(t *testing.T) {
 	assert.Equal(t, ko[1].ID, otherAppID.String())
 }
 
+func TestMapStatefulSets(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	otherAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	statefulsets := &appsv1.StatefulSetList{
+		Items: []appsv1.StatefulSet{
+			newStatefulSet("myapp", myAppID, map[string]string{
+				"app.kubernetes.io/name": "myapp",
+			}),
+			newStatefulSet("otherapp", otherAppID, map[string]string{
+				"app.kubernetes.io/name": "otherapp",
+			}),
+		},
+	}
+
+	ko := MapStatefulSets(statefulsets)
+
+	assert.Len(t, ko, 2)
+	assert.Equal(t, ko[0].ID, myAppID.String())
+	assert.Equal(t, ko[1].ID, otherAppID.String())
+}
+
 func TestMapDeployment(t *testing.T) {
 	myAppID, err := uuid.NewRandom()
 	if err != nil {
@@ -111,12 +138,41 @@ func TestMapDeployment(t *testing.T) {
 
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
+	assert.Equal(t, ko.IsStateful, false)
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+}
+
+func TestMapStatefulSet(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	statefulset := newStatefulSet("myapp", myAppID, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+
+	ko := MapStatefulSet(statefulset)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "statefulSet")
+	assert.Equal(t, ko.IsStateful, true)
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
 }
 
 func newDeployment(name string, uuid uuid.UUID, labels map[string]string) appsv1.Deployment {
 	uid := types.UID(uuid.String())
 	return appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   name,
+			UID:    uid,
+			Labels: labels,
+		},
+	}
+}
+
+func newStatefulSet(name string, uuid uuid.UUID, labels map[string]string) appsv1.StatefulSet {
+	uid := types.UID(uuid.String())
+	return appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			UID:    uid,

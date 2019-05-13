@@ -31,6 +31,26 @@ func TestDeployments(t *testing.T) {
 	assert.Len(t, deployments, 2)
 }
 
+func TestStatefulSets(t *testing.T) {
+	// create a dummy statefulsets
+	dummyStatefulSets := []runtime.Object{
+		&appsv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "myapp"}},
+		&appsv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{Namespace: "prod", Name: "wordpress"}},
+	}
+	k := KubernetesAPI{
+		Client: fake.NewSimpleClientset(dummyStatefulSets...),
+	}
+	// Since the Field Selector functionality is done server side, the fake client
+	// does not support it. So we can not test with blacklisting here.
+	statefulSetList, err := k.StatefulSets([]string{})
+	if err != nil {
+		t.Error(err)
+	}
+	statefulsets := statefulSetList.Items
+
+	assert.Len(t, statefulsets, 2)
+}
+
 func TestNodes(t *testing.T) {
 	// create a dummy nodes
 	dummyNodes := []runtime.Object{
