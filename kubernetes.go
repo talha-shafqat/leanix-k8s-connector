@@ -39,6 +39,18 @@ func (k *KubernetesAPI) Deployments(blacklistedNamespaces []string) (*appsv1.Dep
 	return deployments, nil
 }
 
+// StatefulSets returns a list of statefulsets filted by the given blacklisted namespaces
+func (k *KubernetesAPI) StatefulSets(blacklistedNamespaces []string) (*appsv1.StatefulSetList, error) {
+	fieldSelector := BlacklistFieldSelector(blacklistedNamespaces)
+	statefulsets, err := k.Client.AppsV1().StatefulSets("").List(metav1.ListOptions{
+		FieldSelector: fieldSelector,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return statefulsets, nil
+}
+
 // Nodes gets the list of worker nodes (kubelets)
 func (k *KubernetesAPI) Nodes() (*corev1.NodeList, error) {
 	nodes, err := k.Client.CoreV1().Nodes().List(metav1.ListOptions{})
