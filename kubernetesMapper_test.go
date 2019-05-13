@@ -11,6 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type NameAndZone struct {
+	Name string
+	Zone string
+}
+
 func TestNewKubernetesNodeInfo(t *testing.T) {
 	// create a dummy nodes
 	nodes := corev1.NodeList{
@@ -90,8 +95,13 @@ func TestMapDeployments(t *testing.T) {
 			}),
 		},
 	}
+	node := newNodes([]NameAndZone{
+		NameAndZone{
+			Name: "kubelet-1",
+			Zone: "0",
+		}})
 
-	ko := MapDeployments(deployments)
+	ko := MapDeployments(deployments, node)
 
 	assert.Len(t, ko, 2)
 	assert.Equal(t, ko[0].ID, myAppID.String())
@@ -106,13 +116,20 @@ func TestMapDeployment_singleReplica(t *testing.T) {
 	deployment := newDeployment("myapp", myAppID, 1, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
+	node := newNodes([]NameAndZone{
+		NameAndZone{
+			Name: "kubelet-1",
+			Zone: "0",
+		}})
 
-	ko := MapDeployment(deployment)
+	ko := MapDeployment(deployment, node)
 
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
 	assert.Equal(t, ko.Data["isRedundant"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
 }
 
 func TestMapDeployment_mutlipleReplicas(t *testing.T) {
@@ -123,13 +140,78 @@ func TestMapDeployment_mutlipleReplicas(t *testing.T) {
 	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
+	node := newNodes([]NameAndZone{
+		NameAndZone{
+			Name: "kubelet-1",
+			Zone: "0",
+		}})
 
-	ko := MapDeployment(deployment)
+	ko := MapDeployment(deployment, node)
 
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
 	assert.Equal(t, ko.Data["isRedundant"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+}
+
+func TestMapDeployment_mutlipleReplicas_multipleNodes(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+	node := newNodes([]NameAndZone{
+		NameAndZone{
+			Name: "kubelet-1",
+			Zone: "0",
+		},
+		NameAndZone{
+			Name: "kubelet-2",
+			Zone: "0",
+		},
+	})
+
+	ko := MapDeployment(deployment, node)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "deployment")
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+}
+
+func TestMapDeployment_mutlipleReplicas_multipleNodes_inMultipleRegions(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+	node := newNodes([]NameAndZone{
+		NameAndZone{
+			Name: "kubelet-1",
+			Zone: "0",
+		},
+		NameAndZone{
+			Name: "kubelet-2",
+			Zone: "1",
+		},
+	})
+
+	ko := MapDeployment(deployment, node)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "deployment")
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], true)
 }
 
 func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[string]string) appsv1.Deployment {
@@ -144,4 +226,20 @@ func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[strin
 			Replicas: replicas,
 		},
 	}
+}
+
+func newNodes(nameAndZone []NameAndZone) *[]corev1.Node {
+	nodes := make([]corev1.Node, 0)
+	for _, nz := range nameAndZone {
+		nodes = append(nodes,
+			corev1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: nz.Name,
+					Labels: map[string]string{
+						"name":                                   nz.Name,
+						"failure-domain.beta.kubernetes.io/zone": nz.Zone,
+					},
+				}})
+	}
+	return &nodes
 }

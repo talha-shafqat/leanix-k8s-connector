@@ -47,7 +47,7 @@ func main() {
 	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
 
 	log.Debug("Get deployment list...")
-	deployments, err := kubernetes.Deployments(blacklistedNamespaces)
+	deployments, deploymentNodes, err := kubernetes.DeploymentsOnNodes(blacklistedNamespaces)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func main() {
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
-	deploymentKubernetesObjects := MapDeployments(deployments)
+	deploymentKubernetesObjects := MapDeployments(deployments, deploymentNodes)
 
 	kubernetesObjects := make([]KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)

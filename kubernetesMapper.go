@@ -43,16 +43,16 @@ func NewClusterKubernetesObject(clusterName string, nodeInfo KubernetesNodeInfo)
 }
 
 // MapDeployments maps a kubernetes deployment list to a list of KubernetesObjects
-func MapDeployments(deployments *appsv1.DeploymentList) []KubernetesObject {
+func MapDeployments(deployments *appsv1.DeploymentList, nodes *[]corev1.Node) []KubernetesObject {
 	kubernetesObjects := make([]KubernetesObject, len(deployments.Items))
 	for i, d := range deployments.Items {
-		kubernetesObjects[i] = MapDeployment(d)
+		kubernetesObjects[i] = MapDeployment(d, nodes)
 	}
 	return kubernetesObjects
 }
 
 // MapDeployment maps a single kubernetes deployment to an KubernetesObject
-func MapDeployment(deployment appsv1.Deployment) KubernetesObject {
+func MapDeployment(deployment appsv1.Deployment, nodes *[]corev1.Node) KubernetesObject {
 	kubernetesObject := KubernetesObject{
 		ID:   string(deployment.UID),
 		Type: "deployment",
@@ -61,6 +61,15 @@ func MapDeployment(deployment appsv1.Deployment) KubernetesObject {
 	for k, v := range deployment.Labels {
 		kubernetesObject.Data[k] = v
 	}
+	// Map node names and availability zones to sets
+	nodeNames := NewStringSet()
+	availabilityZones := NewStringSet()
+	for _, n := range *nodes {
+		nodeNames.Add(n.GetName())
+		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
+	}
 	kubernetesObject.Data["isRedundant"] = deployment.Status.Replicas > 1
+	kubernetesObject.Data["isRedundantAcrossNodes"] = len(nodeNames.Items()) > 1
+	kubernetesObject.Data["isRedundantAcrossAvailabilityZones"] = len(availabilityZones.Items()) > 1
 	return kubernetesObject
 }
