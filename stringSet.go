@@ -27,3 +27,9 @@ func (s *StringSet) Items() []string {
 	}
 	return slice
 }
+
+// Contains returns true if the set contains the given string
+func (s *StringSet) Contains(input string) bool {
+	_, ok := s.Map[input]
+	return ok
+}
