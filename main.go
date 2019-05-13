@@ -53,6 +53,13 @@ func main() {
 	}
 	log.Debug("Getting deployment list done.")
 
+	log.Debug("Get statefulset list...")
+	statefulsets, err := kubernetes.StatefulSets(blacklistedNamespaces)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("Getting statefulset list done.")
+
 	log.Debug("Listing nodes...")
 	nodes, err := kubernetes.Nodes()
 	if err != nil {
@@ -68,10 +75,13 @@ func main() {
 
 	log.Debug("Map deployments to kubernetes objects")
 	deploymentKubernetesObjects := MapDeployments(deployments, deploymentNodes)
+	log.Debug("Map statefulsets to kubernetes objects")
+	statefulsetKubernetesObjects := MapStatefulSets(statefulsets)
 
 	kubernetesObjects := make([]KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
 	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
+	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	connectorOutput := ConnectorOutput{
 		ConnectorID:        "leanix-k8s-connector",

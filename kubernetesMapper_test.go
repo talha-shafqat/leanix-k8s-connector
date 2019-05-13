@@ -127,6 +127,7 @@ func TestMapDeployment_singleReplica(t *testing.T) {
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isStateful"], false)
 	assert.Equal(t, ko.Data["isRedundant"], false)
 	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
 	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
@@ -214,6 +215,73 @@ func TestMapDeployment_mutlipleReplicas_multipleNodes_inMultipleRegions(t *testi
 	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], true)
 }
 
+func TestMapStatefulSets(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	otherAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	statefulsets := &appsv1.StatefulSetList{
+		Items: []appsv1.StatefulSet{
+			newStatefulSet("myapp", myAppID, 1, map[string]string{
+				"app.kubernetes.io/name": "myapp",
+			}),
+			newStatefulSet("otherapp", otherAppID, 1, map[string]string{
+				"app.kubernetes.io/name": "otherapp",
+			}),
+		},
+	}
+
+	ko := MapStatefulSets(statefulsets)
+
+	assert.Len(t, ko, 2)
+	assert.Equal(t, ko[0].ID, myAppID.String())
+	assert.Equal(t, ko[1].ID, otherAppID.String())
+}
+
+func TestMapStatefulSet(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	statefulset := newStatefulSet("myapp", myAppID, 1, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+
+	ko := MapStatefulSet(statefulset)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "statefulSet")
+	assert.Equal(t, ko.Data["isStateful"], true)
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+}
+
+func TestMapStatefulSet_multipleReplicas(t *testing.T) {
+	myAppID, err := uuid.NewRandom()
+	if err != nil {
+		t.Error(err)
+	}
+	statefulset := newStatefulSet("myapp", myAppID, 2, map[string]string{
+		"app.kubernetes.io/name": "myapp",
+	})
+
+	ko := MapStatefulSet(statefulset)
+
+	assert.Equal(t, ko.ID, myAppID.String())
+	assert.Equal(t, ko.Type, "statefulSet")
+	assert.Equal(t, ko.Data["isStateful"], true)
+	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
+	assert.Equal(t, ko.Data["isRedundant"], true)
+	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
+	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+}
+
 func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[string]string) appsv1.Deployment {
 	uid := types.UID(uuid.String())
 	return appsv1.Deployment{
@@ -242,4 +310,18 @@ func newNodes(nameAndZone []NameAndZone) *[]corev1.Node {
 				}})
 	}
 	return &nodes
+}
+
+func newStatefulSet(name string, uuid uuid.UUID, replicas int32, labels map[string]string) appsv1.StatefulSet {
+	uid := types.UID(uuid.String())
+	return appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   name,
+			UID:    uid,
+			Labels: labels,
+		},
+		Status: appsv1.StatefulSetStatus{
+			Replicas: replicas,
+		},
+	}
 }
