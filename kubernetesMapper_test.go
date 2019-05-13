@@ -138,7 +138,7 @@ func TestMapDeployment(t *testing.T) {
 
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "deployment")
-	assert.Equal(t, ko.IsStateful, false)
+	assert.Equal(t, ko.Data["isStateful"], false)
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
 }
 
@@ -155,7 +155,7 @@ func TestMapStatefulSet(t *testing.T) {
 
 	assert.Equal(t, ko.ID, myAppID.String())
 	assert.Equal(t, ko.Type, "statefulSet")
-	assert.Equal(t, ko.IsStateful, true)
+	assert.Equal(t, ko.Data["isStateful"], true)
 	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
 }
 

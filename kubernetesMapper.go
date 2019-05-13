@@ -63,27 +63,27 @@ func MapDeployments(deployments *appsv1.DeploymentList) []KubernetesObject {
 // MapDeployment maps a single kubernetes deployment to an KubernetesObject
 func MapDeployment(deployment appsv1.Deployment) KubernetesObject {
 	kubernetesObject := KubernetesObject{
-		ID:         string(deployment.UID),
-		Type:       "deployment",
-		IsStateful: false,
-		Data:       make(map[string]interface{}),
+		ID:   string(deployment.UID),
+		Type: "deployment",
+		Data: make(map[string]interface{}),
 	}
 	for k, v := range deployment.Labels {
 		kubernetesObject.Data[k] = v
 	}
+	kubernetesObject.Data["isStateful"] = false
 	return kubernetesObject
 }
 
 // MapStatefulSet maps a single kubernetes StatefulSet to an KubernetesObject
 func MapStatefulSet(statefulset appsv1.StatefulSet) KubernetesObject {
 	kubernetesObject := KubernetesObject{
-		ID:         string(statefulset.UID),
-		Type:       "statefulSet",
-		IsStateful: true,
-		Data:       make(map[string]interface{}),
+		ID:   string(statefulset.UID),
+		Type: "statefulSet",
+		Data: make(map[string]interface{}),
 	}
 	for k, v := range statefulset.Labels {
 		kubernetesObject.Data[k] = v
 	}
+	kubernetesObject.Data["isStateful"] = true
 	return kubernetesObject
 }
