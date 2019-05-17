@@ -32,3 +32,21 @@ func TestStringSetList(t *testing.T) {
 	assert.Contains(t, list, "foo")
 	assert.Contains(t, list, "bar")
 }
+
+func TestStringSetContains_containsString(t *testing.T) {
+	s := NewStringSet()
+	s.Add("foo")
+
+	found := s.Contains("foo")
+
+	assert.Equal(t, true, found)
+}
+
+func TestStringSetContains_notContainsString(t *testing.T) {
+	s := NewStringSet()
+	s.Add("foo")
+
+	found := s.Contains("test")
+
+	assert.Equal(t, false, found)
+}
