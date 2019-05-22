@@ -6,7 +6,7 @@ type ConnectorOutput struct {
 	ConnectorVersion   string             `json:"connectorVersion,omitempty"`
 	IntegrationVersion string             `json:"integrationVersion,omitempty"`
 	Description        string             `json:"description,omitempty"`
-	Data               []KubernetesObject `json:"data,omitempty"`
+	Content            []KubernetesObject `json:"content,omitempty"`
 }
 
 // KubernetesObject describes an object that is read from the kubernetes api

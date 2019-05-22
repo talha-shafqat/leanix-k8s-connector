@@ -88,7 +88,7 @@ func main() {
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
 		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
-		Data:               kubernetesObjects,
+		Content:            kubernetesObjects,
 	}
 
 	log.Debug("Write output.json file.")
