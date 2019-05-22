@@ -74,9 +74,9 @@ func main() {
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
-	deploymentKubernetesObjects := MapDeployments(deployments, deploymentNodes)
+	deploymentKubernetesObjects := MapDeployments(*clusterName, deployments, deploymentNodes)
 	log.Debug("Map statefulsets to kubernetes objects")
-	statefulsetKubernetesObjects := MapStatefulSets(statefulsets, statefulsetNodes)
+	statefulsetKubernetesObjects := MapStatefulSets(*clusterName, statefulsets, statefulsetNodes)
 
 	kubernetesObjects := make([]KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)

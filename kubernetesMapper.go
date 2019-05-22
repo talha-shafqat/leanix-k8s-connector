@@ -43,25 +43,25 @@ func NewClusterKubernetesObject(clusterName string, nodeInfo KubernetesNodeInfo)
 }
 
 // MapStatefulSets maps a kubernetes statefulset list to a list of KubernetesObjects
-func MapStatefulSets(statefulsets *appsv1.StatefulSetList, nodes *[]corev1.Node) []KubernetesObject {
+func MapStatefulSets(clusterName string, statefulsets *appsv1.StatefulSetList, nodes *[]corev1.Node) []KubernetesObject {
 	kubernetesObjects := make([]KubernetesObject, len(statefulsets.Items))
 	for i, s := range statefulsets.Items {
-		kubernetesObjects[i] = MapStatefulSet(s, nodes)
+		kubernetesObjects[i] = MapStatefulSet(clusterName, s, nodes)
 	}
 	return kubernetesObjects
 }
 
 // MapDeployments maps a kubernetes deployment list to a list of KubernetesObjects
-func MapDeployments(deployments *appsv1.DeploymentList, nodes *[]corev1.Node) []KubernetesObject {
+func MapDeployments(clusterName string, deployments *appsv1.DeploymentList, nodes *[]corev1.Node) []KubernetesObject {
 	kubernetesObjects := make([]KubernetesObject, len(deployments.Items))
 	for i, d := range deployments.Items {
-		kubernetesObjects[i] = MapDeployment(d, nodes)
+		kubernetesObjects[i] = MapDeployment(clusterName, d, nodes)
 	}
 	return kubernetesObjects
 }
 
 // MapDeployment maps a single kubernetes deployment to an KubernetesObject
-func MapDeployment(deployment appsv1.Deployment, nodes *[]corev1.Node) KubernetesObject {
+func MapDeployment(clusterName string, deployment appsv1.Deployment, nodes *[]corev1.Node) KubernetesObject {
 	kubernetesObject := KubernetesObject{
 		ID:   string(deployment.UID),
 		Type: "deployment",
@@ -71,6 +71,7 @@ func MapDeployment(deployment appsv1.Deployment, nodes *[]corev1.Node) Kubernete
 		kubernetesObject.Data[k] = v
 	}
 	redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
+	kubernetesObject.Data["clusterName"] = clusterName
 	kubernetesObject.Data["isStateful"] = false
 	kubernetesObject.Data["isRedundant"] = deployment.Status.Replicas > 1
 	kubernetesObject.Data["isRedundantAcrossNodes"] = redundantAcrossNodes
@@ -79,7 +80,7 @@ func MapDeployment(deployment appsv1.Deployment, nodes *[]corev1.Node) Kubernete
 }
 
 // MapStatefulSet maps a single kubernetes StatefulSet to an KubernetesObject
-func MapStatefulSet(statefulset appsv1.StatefulSet, nodes *[]corev1.Node) KubernetesObject {
+func MapStatefulSet(clusterName string, statefulset appsv1.StatefulSet, nodes *[]corev1.Node) KubernetesObject {
 	kubernetesObject := KubernetesObject{
 		ID:   string(statefulset.UID),
 		Type: "statefulSet",
@@ -89,6 +90,7 @@ func MapStatefulSet(statefulset appsv1.StatefulSet, nodes *[]corev1.Node) Kubern
 		kubernetesObject.Data[k] = v
 	}
 	redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
+	kubernetesObject.Data["clusterName"] = clusterName
 	kubernetesObject.Data["isStateful"] = true
 	kubernetesObject.Data["isRedundant"] = statefulset.Status.Replicas > 1
 	kubernetesObject.Data["isRedundantAcrossNodes"] = redundantAcrossNodes
