@@ -96,8 +96,8 @@ func main() {
 		Content:            kubernetesObjects,
 	}
 
-	log.Debug("Write output.json file.")
-	err = WriteJSONFile(connectorOutput, "output.json")
+	log.Debug("Write ldif.json file.")
+	err = WriteJSONFile(connectorOutput, "ldif.json")
 	if err != nil {
 		log.Fatal(err)
 	}
