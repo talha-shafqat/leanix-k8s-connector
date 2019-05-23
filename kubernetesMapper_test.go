@@ -342,7 +342,7 @@ func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[strin
 
 func newNodes(numberOfNodes int, nodesZoneRedundant bool) *[]corev1.Node {
 	nodes := make([]corev1.Node, numberOfNodes)
-	for i, _ := range nodes {
+	for i := range nodes {
 		name := fmt.Sprintf("kubelet-%d", i)
 		zone := "0"
 		if nodesZoneRedundant {
