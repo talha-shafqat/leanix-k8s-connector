@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -96,11 +97,7 @@ func TestMapDeployments(t *testing.T) {
 			}),
 		},
 	}
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		}})
+	node := newNodes(1, false)
 
 	ko := MapDeployments(clusterName, deployments, node)
 
@@ -109,119 +106,103 @@ func TestMapDeployments(t *testing.T) {
 	assert.Equal(t, ko[1].ID, otherAppID.String())
 }
 
-func TestMapDeployment_singleReplica(t *testing.T) {
-	clusterName := "mycluster"
-	myAppID, err := uuid.NewRandom()
-	if err != nil {
-		t.Error(err)
-	}
-	deployment := newDeployment("myapp", myAppID, 1, map[string]string{
-		"app.kubernetes.io/name": "myapp",
-	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		}})
-
-	ko := MapDeployment(clusterName, deployment, node)
-
-	assert.Equal(t, ko.ID, myAppID.String())
-	assert.Equal(t, ko.Type, "deployment")
-	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
-	assert.Equal(t, ko.Data["clusterName"], clusterName)
-	assert.Equal(t, ko.Data["isStateful"], false)
-	assert.Equal(t, ko.Data["isRedundant"], false)
-	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
-	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+type deploymentMapTestInput struct {
+	id                 uuid.UUID
+	replicas           int32
+	nodes              int
+	nodesZoneRedundant bool
 }
 
-func TestMapDeployment_mutlipleReplicas(t *testing.T) {
-	clusterName := "mycluster"
-	myAppID, err := uuid.NewRandom()
-	if err != nil {
-		t.Error(err)
-	}
-	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
-		"app.kubernetes.io/name": "myapp",
-	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		}})
-
-	ko := MapDeployment(clusterName, deployment, node)
-
-	assert.Equal(t, ko.ID, myAppID.String())
-	assert.Equal(t, ko.Type, "deployment")
-	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
-	assert.Equal(t, ko.Data["clusterName"], clusterName)
-	assert.Equal(t, ko.Data["isRedundant"], true)
-	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], false)
-	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
+type deploymentMapTestExpected struct {
+	isRedundant                        bool
+	isRedundantAcrossNodes             bool
+	isRedundantAcrossAvailabilityZones bool
 }
 
-func TestMapDeployment_mutlipleReplicas_multipleNodes(t *testing.T) {
+func TestMapDeployment(t *testing.T) {
+	// init data which is constrant accross all tests
 	clusterName := "mycluster"
-	myAppID, err := uuid.NewRandom()
+	deploymentName := "myapp"
+	id, err := uuid.NewRandom()
 	if err != nil {
 		t.Error(err)
 	}
-	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
-		"app.kubernetes.io/name": "myapp",
-	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
+
+	tests := map[string]struct {
+		input    deploymentMapTestInput
+		expected deploymentMapTestExpected
+	}{
+		"single replica": {
+			input: deploymentMapTestInput{
+				id:                 id,
+				replicas:           1,
+				nodes:              1,
+				nodesZoneRedundant: false,
+			},
+			expected: deploymentMapTestExpected{
+				isRedundant:                        false,
+				isRedundantAcrossNodes:             false,
+				isRedundantAcrossAvailabilityZones: false,
+			},
 		},
-		NameAndZone{
-			Name: "kubelet-2",
-			Zone: "0",
+		"multiple replicas": {
+			input: deploymentMapTestInput{
+				id:                 id,
+				replicas:           2,
+				nodes:              1,
+				nodesZoneRedundant: false,
+			},
+			expected: deploymentMapTestExpected{
+				isRedundant:                        true,
+				isRedundantAcrossNodes:             false,
+				isRedundantAcrossAvailabilityZones: false,
+			},
 		},
-	})
-
-	ko := MapDeployment(clusterName, deployment, node)
-
-	assert.Equal(t, ko.ID, myAppID.String())
-	assert.Equal(t, ko.Type, "deployment")
-	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
-	assert.Equal(t, ko.Data["clusterName"], clusterName)
-	assert.Equal(t, ko.Data["isRedundant"], true)
-	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], true)
-	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], false)
-}
-
-func TestMapDeployment_mutlipleReplicas_multipleNodes_multipleRegions(t *testing.T) {
-	clusterName := "mycluster"
-	myAppID, err := uuid.NewRandom()
-	if err != nil {
-		t.Error(err)
+		"multiple replicas on multiple nodes": {
+			input: deploymentMapTestInput{
+				id:                 id,
+				replicas:           2,
+				nodes:              2,
+				nodesZoneRedundant: false,
+			},
+			expected: deploymentMapTestExpected{
+				isRedundant:                        true,
+				isRedundantAcrossNodes:             true,
+				isRedundantAcrossAvailabilityZones: false,
+			},
+		},
+		"multiple replicas on multiple zone redudant nodes": {
+			input: deploymentMapTestInput{
+				id:                 id,
+				replicas:           2,
+				nodes:              2,
+				nodesZoneRedundant: true,
+			},
+			expected: deploymentMapTestExpected{
+				isRedundant:                        true,
+				isRedundantAcrossNodes:             true,
+				isRedundantAcrossAvailabilityZones: true,
+			},
+		},
 	}
-	deployment := newDeployment("myapp", myAppID, 2, map[string]string{
-		"app.kubernetes.io/name": "myapp",
-	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-		NameAndZone{
-			Name: "kubelet-2",
-			Zone: "1",
-		},
-	})
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			deployment := newDeployment(deploymentName, test.input.id, test.input.replicas, map[string]string{
+				"app.kubernetes.io/name": deploymentName,
+			})
+			nodes := newNodes(test.input.nodes, test.input.nodesZoneRedundant)
+			result := MapDeployment(clusterName, deployment, nodes)
 
-	ko := MapDeployment(clusterName, deployment, node)
-
-	assert.Equal(t, ko.ID, myAppID.String())
-	assert.Equal(t, ko.Type, "deployment")
-	assert.Equal(t, ko.Data["app.kubernetes.io/name"], "myapp")
-	assert.Equal(t, ko.Data["clusterName"], clusterName)
-	assert.Equal(t, ko.Data["isRedundant"], true)
-	assert.Equal(t, ko.Data["isRedundantAcrossNodes"], true)
-	assert.Equal(t, ko.Data["isRedundantAcrossAvailabilityZones"], true)
+			assert.Equal(t, result.ID, id.String())
+			assert.Equal(t, result.Type, "deployment")
+			assert.Equal(t, result.Data["app.kubernetes.io/name"], deploymentName)
+			assert.Equal(t, result.Data["clusterName"], clusterName)
+			assert.Equal(t, result.Data["isStateful"], false)
+			assert.Equal(t, result.Data["isRedundant"], test.expected.isRedundant)
+			assert.Equal(t, result.Data["isRedundantAcrossNodes"], test.expected.isRedundantAcrossNodes)
+			assert.Equal(t, result.Data["isRedundantAcrossAvailabilityZones"], test.expected.isRedundantAcrossAvailabilityZones)
+		})
+	}
 }
 
 func TestMapStatefulSets(t *testing.T) {
@@ -244,12 +225,7 @@ func TestMapStatefulSets(t *testing.T) {
 			}),
 		},
 	}
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-	})
+	node := newNodes(1, false)
 
 	ko := MapStatefulSets(clusterName, statefulsets, node)
 
@@ -267,12 +243,7 @@ func TestMapStatefulSet(t *testing.T) {
 	statefulset := newStatefulSet("myapp", myAppID, 1, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-	})
+	node := newNodes(1, false)
 
 	ko := MapStatefulSet(clusterName, statefulset, node)
 
@@ -295,12 +266,7 @@ func TestMapStatefulSet_multipleReplicas(t *testing.T) {
 	statefulset := newStatefulSet("myapp", myAppID, 2, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-	})
+	node := newNodes(1, false)
 
 	ko := MapStatefulSet(clusterName, statefulset, node)
 
@@ -323,16 +289,7 @@ func TestMapStatefulSet_multipleReplicas_multipleNodes(t *testing.T) {
 	statefulset := newStatefulSet("myapp", myAppID, 2, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-		NameAndZone{
-			Name: "kubelet-2",
-			Zone: "0",
-		},
-	})
+	node := newNodes(2, false)
 
 	ko := MapStatefulSet(clusterName, statefulset, node)
 
@@ -355,16 +312,7 @@ func TestMapStatefulSet_multipleReplicas_multipleNodes_multipleRegions(t *testin
 	statefulset := newStatefulSet("myapp", myAppID, 2, map[string]string{
 		"app.kubernetes.io/name": "myapp",
 	})
-	node := newNodes([]NameAndZone{
-		NameAndZone{
-			Name: "kubelet-1",
-			Zone: "0",
-		},
-		NameAndZone{
-			Name: "kubelet-2",
-			Zone: "1",
-		},
-	})
+	node := newNodes(2, true)
 
 	ko := MapStatefulSet(clusterName, statefulset, node)
 
@@ -392,18 +340,22 @@ func newDeployment(name string, uuid uuid.UUID, replicas int32, labels map[strin
 	}
 }
 
-func newNodes(nameAndZone []NameAndZone) *[]corev1.Node {
-	nodes := make([]corev1.Node, 0)
-	for _, nz := range nameAndZone {
-		nodes = append(nodes,
-			corev1.Node{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: nz.Name,
-					Labels: map[string]string{
-						"name":                                   nz.Name,
-						"failure-domain.beta.kubernetes.io/zone": nz.Zone,
-					},
-				}})
+func newNodes(numberOfNodes int, nodesZoneRedundant bool) *[]corev1.Node {
+	nodes := make([]corev1.Node, numberOfNodes)
+	for i, _ := range nodes {
+		name := fmt.Sprintf("kubelet-%d", i)
+		zone := "0"
+		if nodesZoneRedundant {
+			zone = string(i)
+		}
+		nodes[i] = corev1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+				Labels: map[string]string{
+					"name":                                   name,
+					"failure-domain.beta.kubernetes.io/zone": zone,
+				},
+			}}
 	}
 	return &nodes
 }
