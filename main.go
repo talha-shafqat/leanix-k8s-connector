@@ -19,6 +19,7 @@ const (
 	azureAccountNameFlag string = "azure-account-name"
 	azureAccountKeyFlag  string = "azure-account-key"
 	azureContainerFlag   string = "azure-container"
+	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
 )
 
@@ -35,6 +36,7 @@ func main() {
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
 	flag.String(azureContainerFlag, "", "Azure storage account container")
+	flag.String(localFilePathFlag, ".", "path to place the ldif file when using file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.Parse()
 	// Let flags overwrite configs in viper
@@ -128,7 +130,10 @@ func main() {
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
 		Container:   viper.GetString(azureContainerFlag),
 	}
-	uploader, err := NewStorageBackend(viper.GetString("storage-backend"), &azureOpts)
+	localFileOpts := LocalFileOpts{
+		Path: viper.GetString(localFilePathFlag),
+	}
+	uploader, err := NewStorageBackend(viper.GetString("storage-backend"), &azureOpts, &localFileOpts)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 
 	azure "github.com/Azure/azure-sdk-for-go/storage"
@@ -21,8 +22,13 @@ type AzureStorageOpts struct {
 	Container   string
 }
 
+// LocalFileOpts options for local file storage
+type LocalFileOpts struct {
+	Path string
+}
+
 // NewStorageBackend create a new storage backend for the given storage engine
-func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts) (StorageBackend, error) {
+func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts, localFileOpts *LocalFileOpts) (StorageBackend, error) {
 	switch storageEngine {
 	case "azure":
 		if azureOpts == nil {
@@ -30,7 +36,7 @@ func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts) (Stora
 		}
 		return NewAzureStorage(azureOpts)
 	case "file":
-		return &LocalFile{}, nil
+		return NewLocalFile(localFileOpts.Path)
 	}
 	return nil, fmt.Errorf("Unsupported storage engine %s", storageEngine)
 }
@@ -38,6 +44,21 @@ func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts) (Stora
 // LocalFile writes the content to disk
 type LocalFile struct {
 	Path string
+}
+
+// NewLocalFile create a LocalFile StorageBackend
+func NewLocalFile(path string) (*LocalFile, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	if !fi.Mode().IsDir() {
+		return nil, fmt.Errorf("path %s is not a directory", path)
+	}
+	lf := &LocalFile{
+		Path: path,
+	}
+	return lf, nil
 }
 
 // Upload does nothing (no op)
