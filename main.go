@@ -15,6 +15,7 @@ func main() {
 	// Parse flags
 	var kubeconfig *string
 	var clusterName *string
+	var outputStorage *string
 	var verbose *bool
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -22,6 +23,7 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
+	outputStorage = flag.String("output-storage", "local", "target storage where the ldif.json file is placed. (local, azure)")
 	verbose = flag.Bool("verbose", false, "verbose log output")
 	flag.Parse()
 	err := InitLogger(*verbose)
@@ -101,6 +103,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var uploader LDIFUploader
+	switch *outputStorage {
+	default:
+		uploader = NewNoOpUploader()
+	}
+	uploader.Upload()
 }
 
 // InitLogger initialise the logger for stdout and log file
