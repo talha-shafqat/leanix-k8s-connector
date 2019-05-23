@@ -3,54 +3,65 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	"github.com/op/go-logging"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	kubeConfigFlag       string = "kubeconfig"
+	clusterNameFlag      string = "clustername"
+	storageBackendFlag   string = "storage-backend"
+	azureAccountNameFlag string = "azure-account-name"
+	azureAccountKeyFlag  string = "azure-account-key"
+	azureContainerFlag   string = "azure-container"
+	verboseFlag          string = "verbose"
+)
+
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
-	// Parse flags
-	var kubeconfig *string
-	var clusterName *string
-	var outputStorage *string
-	var azureAccountName *string
-	var azureAccountKey *string
-	var azureContainer *string
-	var verbose *bool
 	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		flag.String(kubeConfigFlag, filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
 	}
-	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
-	outputStorage = flag.String("output-storage", "file", "target storage where the ldif.json file is placed. (file, azure)")
-	azureAccountName = flag.String("azure-account-name", "", "Azure storage account name")
-	azureAccountKey = flag.String("azure-account-key", "", "Azure storage account key")
-	azureContainer = flag.String("azure-container", "", "Azure storage account container")
-	verbose = flag.Bool("verbose", false, "verbose log output")
+	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
+	flag.String(storageBackendFlag, "file", "storage where the ldif.json file is placed. (file, azure)")
+	flag.String(azureAccountNameFlag, "", "Azure storage account name")
+	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
+	flag.String(azureContainerFlag, "", "Azure storage account container")
+	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.Parse()
-	err := InitLogger(*verbose)
+	// Let flags overwrite configs in viper
+	viper.BindPFlags(flag.CommandLine)
+	// Check for config values in env vars
+	viper.AutomaticEnv()
+	replacer := strings.NewReplacer("-", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
+	err := InitLogger(viper.GetBool(verboseFlag))
 	if err != nil {
 		// use panic here because the logger functionality was not initalized
 		panic(err)
 	}
-	log.Debugf("Target kubernetes cluster name: %s", *clusterName)
+	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
-	if *clusterName == "" {
+	if viper.GetString(clusterNameFlag) == "" {
 		flag.PrintDefaults()
 		log.Fatal("clustername flag must be set.")
 	}
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := clientcmd.BuildConfigFromFlags("", viper.GetString(kubeConfigFlag))
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debugf("Using kube config: %s", *kubeconfig)
+	log.Debugf("Using kube config: %s", viper.GetString(kubeConfigFlag))
 	log.Debugf("Kubernetes master from config: %s", config.Host)
 
 	kubernetes, err := NewKubernetesAPI(config)
@@ -83,14 +94,14 @@ func main() {
 
 	log.Debug("Map nodes to kubernetes object")
 	clusterKubernetesObject := NewClusterKubernetesObject(
-		*clusterName,
+		viper.GetString("clustername"),
 		NewKubernetesNodeInfo(nodes),
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
-	deploymentKubernetesObjects := MapDeployments(*clusterName, deployments, deploymentNodes)
+	deploymentKubernetesObjects := MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
 	log.Debug("Map statefulsets to kubernetes objects")
-	statefulsetKubernetesObjects := MapStatefulSets(*clusterName, statefulsets, statefulsetNodes)
+	statefulsetKubernetesObjects := MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
 
 	kubernetesObjects := make([]KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
@@ -111,13 +122,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debugf("Upload ldif.json to %s", *outputStorage)
+	log.Debugf("Upload ldif.json to %s", viper.GetString("storage-backend"))
 	azureOpts := AzureStorageOpts{
-		AccountName: *azureAccountName,
-		AccountKey:  *azureAccountKey,
-		Container:   *azureContainer,
+		AccountName: viper.GetString(azureAccountNameFlag),
+		AccountKey:  viper.GetString(azureAccountKeyFlag),
+		Container:   viper.GetString(azureContainerFlag),
 	}
-	uploader, err := NewStorageBackend(*outputStorage, &azureOpts)
+	uploader, err := NewStorageBackend(viper.GetString("storage-backend"), &azureOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
