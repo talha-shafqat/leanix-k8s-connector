@@ -21,7 +21,7 @@ func main() {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
-	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster")
+	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
 	verbose = flag.Bool("verbose", false, "verbose log output")
 	flag.Parse()
 	err := InitLogger(*verbose)
@@ -30,6 +30,11 @@ func main() {
 		panic(err)
 	}
 	log.Debugf("Target kubernetes cluster name: %s", *clusterName)
+
+	if *clusterName == "" {
+		flag.PrintDefaults()
+		log.Fatal("clustername flag must be set.")
+	}
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
