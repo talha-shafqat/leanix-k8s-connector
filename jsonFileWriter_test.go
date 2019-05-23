@@ -10,7 +10,7 @@ import (
 )
 
 func TestWriteJSONFile(t *testing.T) {
-	data := ConnectorOutput{
+	data := LDIF{
 		ConnectorID:        "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
@@ -41,10 +41,10 @@ func TestWriteJSONFile(t *testing.T) {
 	WriteJSONFile(data, filename)
 	defer os.Remove(filename)
 	outputFile, _ := ioutil.ReadFile(filename)
-	var outputFileData ConnectorOutput
-	err := json.Unmarshal(outputFile, &outputFileData)
+	var ldif LDIF
+	err := json.Unmarshal(outputFile, &ldif)
 	if err != nil {
 		t.Error(err)
 	}
-	assert.EqualValues(t, data, outputFileData)
+	assert.EqualValues(t, data, ldif)
 }

@@ -97,7 +97,7 @@ func main() {
 	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
-	connectorOutput := ConnectorOutput{
+	ldif := LDIF{
 		ConnectorID:        "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
@@ -106,12 +106,12 @@ func main() {
 	}
 
 	log.Debug("Write ldif.json file.")
-	err = WriteJSONFile(connectorOutput, "ldif.json")
+	err = WriteJSONFile(ldif, "ldif.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	b, err := json.MarshalIndent(connectorOutput, "", "  ")
+	b, err := json.MarshalIndent(ldif, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
