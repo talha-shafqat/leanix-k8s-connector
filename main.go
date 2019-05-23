@@ -122,7 +122,7 @@ func main() {
 		AccountKey:  *azureAccountKey,
 		Container:   *azureContainer,
 	}
-	uploader, err := NewLDIFUploader(*outputStorage, &azureOpts)
+	uploader, err := NewStorageBackend(*outputStorage, &azureOpts)
 	if err != nil {
 		log.Fatal(err)
 	}

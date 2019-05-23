@@ -3,12 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"path"
 
 	azure "github.com/Azure/azure-sdk-for-go/storage"
 )
 
-// LDIFUploader exposes a common interface for all upload mechanisms
-type LDIFUploader interface {
+// StorageBackend exposes a common interface for all storage mechanisms
+type StorageBackend interface {
 	Upload(content []byte) error
 }
 
@@ -19,35 +21,38 @@ type AzureStorageOpts struct {
 	Container   string
 }
 
-// NewLDIFUploader create a new uploader for the given storage engine
-func NewLDIFUploader(storageEngine string, azureOpts *AzureStorageOpts) (LDIFUploader, error) {
+// NewStorageBackend create a new storage backend for the given storage engine
+func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts) (StorageBackend, error) {
 	switch storageEngine {
 	case "azure":
 		if azureOpts == nil {
 			return nil, errors.New("azure storage options must be set when using azure as storage target")
 		}
-		return NewAzureUploader(azureOpts)
+		return NewAzureStorage(azureOpts)
 	case "local":
-		return &NoOpUploader{}, nil
+		return &LocalFile{}, nil
 	}
 	return nil, fmt.Errorf("Unsupported storage engine %s", storageEngine)
 }
 
-// NoOpUploader implements the LDIFUploader interface without doing any upload
-type NoOpUploader struct{}
-
-// Upload does nothing (no op)
-func (u *NoOpUploader) Upload(content []byte) error {
-	return nil
+// LocalFile writes the content to disk
+type LocalFile struct {
+	Path string
 }
 
-// AzureUploader implements to LDIFUploader interface to upload files to azure blob storage
-type AzureUploader struct {
+// Upload does nothing (no op)
+func (u *LocalFile) Upload(content []byte) error {
+	location := path.Join(u.Path, "ldif.json")
+	return ioutil.WriteFile(location, content, 0644)
+}
+
+// AzureStorage is used to upload files to azure blob storage
+type AzureStorage struct {
 	Container *azure.Container
 }
 
-// NewAzureUploader creates a new AzureUploader
-func NewAzureUploader(azureOpts *AzureStorageOpts) (*AzureUploader, error) {
+// NewAzureStorage creates a new AzureStorage
+func NewAzureStorage(azureOpts *AzureStorageOpts) (*AzureStorage, error) {
 	if azureOpts == nil {
 		return nil, errors.New("missing azure options")
 	}
@@ -60,7 +65,7 @@ func NewAzureUploader(azureOpts *AzureStorageOpts) (*AzureUploader, error) {
 	blobClient := client.GetBlobService()
 	containerRef := blobClient.GetContainerReference(azureOpts.Container)
 
-	u := &AzureUploader{
+	u := &AzureStorage{
 		Container: containerRef,
 	}
 
@@ -68,7 +73,7 @@ func NewAzureUploader(azureOpts *AzureStorageOpts) (*AzureUploader, error) {
 }
 
 // Upload uploads a file to azure blob storage
-func (u AzureUploader) Upload(content []byte) error {
+func (u AzureStorage) Upload(content []byte) error {
 	if u.Container == nil {
 		return errors.New("unable to obtain a container reference")
 	}
