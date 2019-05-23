@@ -104,10 +104,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var uploader LDIFUploader
-	switch *outputStorage {
-	default:
-		uploader = NewNoOpUploader()
+	log.Debugf("Upload ldif.json to %s", *outputStorage)
+	uploader, err := NewLDIFUploader(*outputStorage)
+	if err != nil {
+		log.Fatal(err)
 	}
 	uploader.Upload()
 }
