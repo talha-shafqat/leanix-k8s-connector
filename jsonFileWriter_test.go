@@ -15,7 +15,7 @@ func TestWriteJSONFile(t *testing.T) {
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
 		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
-		Data: []KubernetesObject{
+		Content: []KubernetesObject{
 			KubernetesObject{
 				ID:   "my-cluster",
 				Type: "cluster",

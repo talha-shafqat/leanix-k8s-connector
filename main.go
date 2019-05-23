@@ -21,7 +21,7 @@ func main() {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
-	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster")
+	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
 	verbose = flag.Bool("verbose", false, "verbose log output")
 	flag.Parse()
 	err := InitLogger(*verbose)
@@ -30,6 +30,11 @@ func main() {
 		panic(err)
 	}
 	log.Debugf("Target kubernetes cluster name: %s", *clusterName)
+
+	if *clusterName == "" {
+		flag.PrintDefaults()
+		log.Fatal("clustername flag must be set.")
+	}
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
@@ -74,9 +79,9 @@ func main() {
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
-	deploymentKubernetesObjects := MapDeployments(deployments, deploymentNodes)
+	deploymentKubernetesObjects := MapDeployments(*clusterName, deployments, deploymentNodes)
 	log.Debug("Map statefulsets to kubernetes objects")
-	statefulsetKubernetesObjects := MapStatefulSets(statefulsets, statefulsetNodes)
+	statefulsetKubernetesObjects := MapStatefulSets(*clusterName, statefulsets, statefulsetNodes)
 
 	kubernetesObjects := make([]KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
@@ -88,7 +93,7 @@ func main() {
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
 		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
-		Data:               kubernetesObjects,
+		Content:            kubernetesObjects,
 	}
 
 	log.Debug("Write output.json file.")
