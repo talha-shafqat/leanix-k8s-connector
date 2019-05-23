@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"os"
 	"path/filepath"
@@ -27,7 +26,7 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
-	outputStorage = flag.String("output-storage", "local", "target storage where the ldif.json file is placed. (local, azure)")
+	outputStorage = flag.String("output-storage", "file", "target storage where the ldif.json file is placed. (file, azure)")
 	azureAccountName = flag.String("azure-account-name", "", "Azure storage account name")
 	azureAccountKey = flag.String("azure-account-key", "", "Azure storage account key")
 	azureContainer = flag.String("azure-container", "", "Azure storage account container")
@@ -105,13 +104,8 @@ func main() {
 		Content:            kubernetesObjects,
 	}
 
-	log.Debug("Write ldif.json file.")
-	err = WriteJSONFile(ldif, "ldif.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	b, err := json.MarshalIndent(ldif, "", "  ")
+	log.Debug("Marshal ldif")
+	ldifByte, err := Marshal(ldif)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,7 +120,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uploader.Upload(b)
+	uploader.Upload(ldifByte)
 }
 
 // InitLogger initialise the logger for stdout and log file

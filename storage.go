@@ -29,7 +29,7 @@ func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts) (Stora
 			return nil, errors.New("azure storage options must be set when using azure as storage target")
 		}
 		return NewAzureStorage(azureOpts)
-	case "local":
+	case "file":
 		return &LocalFile{}, nil
 	}
 	return nil, fmt.Errorf("Unsupported storage engine %s", storageEngine)
