@@ -1,9 +1,10 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/op/go-logging"
 	"k8s.io/client-go/tools/clientcmd"
