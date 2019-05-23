@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"os"
 	"path/filepath"
@@ -16,6 +17,9 @@ func main() {
 	var kubeconfig *string
 	var clusterName *string
 	var outputStorage *string
+	var azureAccountName *string
+	var azureAccountKey *string
+	var azureContainer *string
 	var verbose *bool
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -24,6 +28,9 @@ func main() {
 	}
 	clusterName = flag.String("clustername", "", "unique name of the kubernets cluster [required]")
 	outputStorage = flag.String("output-storage", "local", "target storage where the ldif.json file is placed. (local, azure)")
+	azureAccountName = flag.String("azure-account-name", "", "Azure storage account name")
+	azureAccountKey = flag.String("azure-account-key", "", "Azure storage account key")
+	azureContainer = flag.String("azure-container", "", "Azure storage account container")
 	verbose = flag.Bool("verbose", false, "verbose log output")
 	flag.Parse()
 	err := InitLogger(*verbose)
@@ -104,12 +111,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debugf("Upload ldif.json to %s", *outputStorage)
-	uploader, err := NewLDIFUploader(*outputStorage)
+	b, err := json.MarshalIndent(connectorOutput, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
-	uploader.Upload()
+
+	log.Debugf("Upload ldif.json to %s", *outputStorage)
+	azureOpts := AzureStorageOpts{
+		AccountName: *azureAccountName,
+		AccountKey:  *azureAccountKey,
+		Container:   *azureContainer,
+	}
+	uploader, err := NewLDIFUploader(*outputStorage, &azureOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uploader.Upload(b)
 }
 
 // InitLogger initialise the logger for stdout and log file
