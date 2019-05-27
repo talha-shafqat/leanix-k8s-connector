@@ -66,7 +66,7 @@ func NewLocalFile(path string) (*LocalFile, error) {
 	return lf, nil
 }
 
-// Upload does nothing (no op)
+// Upload persists the content in a local file
 func (u *LocalFile) Upload(content []byte) error {
 	location := path.Join(u.Path, "ldif.json")
 	return ioutil.WriteFile(location, content, 0644)
