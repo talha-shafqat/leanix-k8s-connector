@@ -37,7 +37,7 @@ func main() {
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
 	flag.String(azureContainerFlag, "", "Azure storage account container")
-	flag.String(localFilePathFlag, ".", "path to place the ldif file when using file storage backend")
+	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.Parse()
 	// Let flags overwrite configs in viper
