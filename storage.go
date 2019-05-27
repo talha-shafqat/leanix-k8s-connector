@@ -90,6 +90,13 @@ func NewAzureStorage(azureOpts *AzureStorageOpts) (*AzureStorage, error) {
 
 	blobClient := client.GetBlobService()
 	containerRef := blobClient.GetContainerReference(azureOpts.Container)
+	containerExists, err := containerRef.Exists()
+	if err != nil {
+		return nil, err
+	}
+	if !containerExists {
+		return nil, fmt.Errorf("azure blob storage container %s does not exist", azureOpts.Container)
+	}
 
 	u := &AzureStorage{
 		Container: containerRef,
@@ -106,6 +113,7 @@ func (u AzureStorage) Upload(content []byte) error {
 
 	blobReference := u.Container.GetBlobReference("ldif.json")
 
+	// create the blob if it does not exist
 	err := blobReference.PutAppendBlob(nil)
 	if err == nil {
 		err = blobReference.AppendBlock(content, nil)
