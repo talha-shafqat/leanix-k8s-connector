@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,7 +33,7 @@ func main() {
 		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
 	}
 	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
-	flag.String(storageBackendFlag, "file", "storage where the ldif.json file is placed. (file, azure)")
+	flag.String(storageBackendFlag, fileStorage, fmt.Sprintf("storage where the ldif.json file is placed. (%s, %s)", fileStorage, azureblobStorage))
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
 	flag.String(azureContainerFlag, "", "Azure storage account container")

@@ -10,6 +10,11 @@ import (
 	azure "github.com/Azure/azure-sdk-for-go/storage"
 )
 
+const (
+	azureblobStorage string = "azureblob"
+	fileStorage      string = "file"
+)
+
 // StorageBackend exposes a common interface for all storage mechanisms
 type StorageBackend interface {
 	Upload(content []byte) error
@@ -27,18 +32,18 @@ type LocalFileOpts struct {
 	Path string
 }
 
-// NewStorageBackend create a new storage backend for the given storage engine
-func NewStorageBackend(storageEngine string, azureOpts *AzureStorageOpts, localFileOpts *LocalFileOpts) (StorageBackend, error) {
-	switch storageEngine {
-	case "azure":
+// NewStorageBackend create a new storage backend for the given storage backend type
+func NewStorageBackend(storageBackend string, azureOpts *AzureStorageOpts, localFileOpts *LocalFileOpts) (StorageBackend, error) {
+	switch storageBackend {
+	case azureblobStorage:
 		if azureOpts == nil {
 			return nil, errors.New("azure storage options must be set when using azure as storage target")
 		}
 		return NewAzureStorage(azureOpts)
-	case "file":
+	case fileStorage:
 		return NewLocalFile(localFileOpts.Path)
 	}
-	return nil, fmt.Errorf("Unsupported storage engine %s", storageEngine)
+	return nil, fmt.Errorf("Unsupported storage backend type %s", storageBackend)
 }
 
 // LocalFile writes the content to disk
