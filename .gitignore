@@ -3,3 +3,4 @@ leanix-k8s-connector
 
 *.json
 *.log
+vendor
