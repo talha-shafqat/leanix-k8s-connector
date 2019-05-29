@@ -10,9 +10,11 @@ require (
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
+	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
+	github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -25,6 +27,7 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
+	golang.org/x/arch v0.0.0-20190312162104-788fe5ffcd8c // indirect
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c // indirect
 	golang.org/x/net v0.0.0-20190328230028-74de082e2cca // indirect
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914 // indirect

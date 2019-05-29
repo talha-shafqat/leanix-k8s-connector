@@ -1,11 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
+	"github.com/leanix/leanix-k8s-connector/pkg/mapper"
+	"github.com/leanix/leanix-k8s-connector/pkg/storage"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -27,37 +31,12 @@ const (
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
-	if home := homeDir(); home != "" {
-		flag.String(kubeConfigFlag, filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
-	}
-	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
-	flag.String(storageBackendFlag, fileStorage, fmt.Sprintf("storage where the ldif.json file is placed. (%s, %s)", fileStorage, azureblobStorage))
-	flag.String(azureAccountNameFlag, "", "Azure storage account name")
-	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
-	flag.String(azureContainerFlag, "", "Azure storage account container")
-	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
-	flag.Bool(verboseFlag, false, "verbose log output")
-	flag.Parse()
-	// Let flags overwrite configs in viper
-	viper.BindPFlags(flag.CommandLine)
-	// Check for config values in env vars
-	viper.AutomaticEnv()
-	replacer := strings.NewReplacer("-", "_")
-	viper.SetEnvKeyReplacer(replacer)
-
-	err := InitLogger(viper.GetBool(verboseFlag))
+	initLogger(viper.GetBool(verboseFlag))
+	err := parseFlags()
 	if err != nil {
-		// use panic here because the logger functionality was not initalized
-		panic(err)
+		log.Critical(err)
 	}
 	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
-
-	if viper.GetString(clusterNameFlag) == "" {
-		flag.PrintDefaults()
-		log.Fatal("clustername flag must be set.")
-	}
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", viper.GetString(kubeConfigFlag))
@@ -67,7 +46,7 @@ func main() {
 	log.Debugf("Using kube config: %s", viper.GetString(kubeConfigFlag))
 	log.Debugf("Kubernetes master from config: %s", config.Host)
 
-	kubernetes, err := NewKubernetesAPI(config)
+	kubernetes, err := kubernetes.NewAPI(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,22 +75,22 @@ func main() {
 	log.Debug("Listing nodes done.")
 
 	log.Debug("Map nodes to kubernetes object")
-	clusterKubernetesObject := NewClusterKubernetesObject(
+	clusterKubernetesObject := mapper.NewClusterKubernetesObject(
 		viper.GetString("clustername"),
-		NewKubernetesNodeInfo(nodes),
+		mapper.NewKubernetesNodeInfo(nodes),
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
-	deploymentKubernetesObjects := MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
+	deploymentKubernetesObjects := mapper.MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
 	log.Debug("Map statefulsets to kubernetes objects")
-	statefulsetKubernetesObjects := MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
+	statefulsetKubernetesObjects := mapper.MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
 
-	kubernetesObjects := make([]KubernetesObject, 0)
+	kubernetesObjects := make([]mapper.KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
 	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
-	ldif := LDIF{
+	ldif := mapper.LDIF{
 		ConnectorID:        "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
@@ -120,29 +99,58 @@ func main() {
 	}
 
 	log.Debug("Marshal ldif")
-	ldifByte, err := Marshal(ldif)
+	ldifByte, err := storage.Marshal(ldif)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Debugf("Upload ldif.json to %s", viper.GetString("storage-backend"))
-	azureOpts := AzureStorageOpts{
+	azureOpts := storage.AzureBlobOpts{
 		AccountName: viper.GetString(azureAccountNameFlag),
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
 		Container:   viper.GetString(azureContainerFlag),
 	}
-	localFileOpts := LocalFileOpts{
+	localFileOpts := storage.LocalFileOpts{
 		Path: viper.GetString(localFilePathFlag),
 	}
-	uploader, err := NewStorageBackend(viper.GetString("storage-backend"), &azureOpts, &localFileOpts)
+	uploader, err := storage.NewBackend(viper.GetString("storage-backend"), &azureOpts, &localFileOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
 	uploader.Upload(ldifByte)
 }
 
+func parseFlags() error {
+	if home := homeDir(); home != "" {
+		flag.String(kubeConfigFlag, filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
+	}
+	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
+	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed. (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
+	flag.String(azureAccountNameFlag, "", "Azure storage account name")
+	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
+	flag.String(azureContainerFlag, "", "Azure storage account container")
+	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
+	flag.Bool(verboseFlag, false, "verbose log output")
+	flag.Parse()
+	// Let flags overwrite configs in viper
+	err := viper.BindPFlags(flag.CommandLine)
+	if err != nil {
+		return err
+	}
+	// Check for config values in env vars
+	viper.AutomaticEnv()
+	replacer := strings.NewReplacer("-", "_")
+	viper.SetEnvKeyReplacer(replacer)
+	if viper.GetString(clusterNameFlag) == "" {
+		return errors.New("clustername flag must be set")
+	}
+	return nil
+}
+
 // InitLogger initialise the logger for stdout and log file
-func InitLogger(verbose bool) error {
+func initLogger(verbose bool) {
 	format := logging.MustStringFormatter(`%{time:15:04:05.000} ▶ [%{level:.4s}] %{message}`)
 	logging.SetFormatter(format)
 
@@ -158,12 +166,10 @@ func InitLogger(verbose bool) error {
 	// file logging backend
 	f, err := os.OpenFile("leanix-k8s-connector.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		return err
+		log.Warningf("unable to log to 'leanix-k8s-connector.log': %s\n", err)
 	}
 	fileLogger := logging.NewLogBackend(f, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
-
-	return nil
 }
 
 func homeDir() string {
