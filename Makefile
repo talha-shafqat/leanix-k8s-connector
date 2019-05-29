@@ -2,8 +2,19 @@ GOARCH=amd64
 GOOS=linux
 GOVERSION=1.12
 PROJECT=leanix-k8s-connector
+DOCKER_NAMESPACE=leanix
 
-BUILD_CMD=docker run \
+# This version-strategy uses git tags to set the version string
+VERSION := $(shell git describe --tags --always --dirty)
+#
+# This version-strategy uses a manual value to set the version string
+#VERSION := 1.2.3
+
+IMAGE := $(DOCKER_NAMESPACE)/$(PROJECT):$(VERSION)
+
+BUILD_CMD=go build -o bin/$(PROJECT) -ldflags "-X $(go list -m)/pkg/version.VERSION=${VERSION}" ./cmd/$(PROJECT)/main.go
+
+DOCKER_BUILD_CMD=docker run \
 		--rm \
 		--name $(PROJECT)-build \
 		-e GOARCH=$(GOARCH) \
@@ -11,10 +22,10 @@ BUILD_CMD=docker run \
 		-v $(PWD):/tmp/$(PROJECT) \
 		-w /tmp/$(PROJECT) \
 		golang:$(GOVERSION) \
-		go build
+		$(BUILD_CMD)
 
 ifdef GOPATH
-BUILD_CMD=docker run \
+DOCKER_BUILD_CMD=docker run \
 		--rm \
 		--name $(PROJECT)-build \
 		-e GOARCH=$(GOARCH) \
@@ -23,7 +34,7 @@ BUILD_CMD=docker run \
 		-v $(PWD):/tmp/$(PROJECT) \
 		-w /tmp/$(PROJECT) \
 		golang:$(GOVERSION) \
-		go build
+		$(BUILD_CMD)
 endif
 
 .PHONY: all
@@ -31,7 +42,16 @@ endif
 all: clean build
 
 clean:
-	$(RM) $(PROJECT)
+	$(RM) bin/$(PROJECT)
 
 build:
+	$(DOCKER_BUILD_CMD)
+
+build-local:
 	$(BUILD_CMD)
+
+image:
+	docker build -t $(IMAGE) .
+
+push:
+	docker push $(IMAGE)
