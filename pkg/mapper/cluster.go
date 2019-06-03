@@ -11,6 +11,7 @@ func NewClusterKubernetesObject(clusterName string, nodeInfo KubernetesNodeInfo)
 			"dataCenter":        nodeInfo.DataCenter,
 			"nodeTypes":         nodeInfo.NodeTypes,
 			"numberNodes":       nodeInfo.NumberNodes,
+			"labels":            nodeInfo.Labels,
 		},
 	}
 }

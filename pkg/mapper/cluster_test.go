@@ -13,6 +13,7 @@ func TestNewClusterKubernetesObject(t *testing.T) {
 		AvailabilityZones: []string{"0"},
 		NodeTypes:         []string{"Standard_D4s_v3"},
 		NumberNodes:       3,
+		Labels:            map[string][]string{"agentpool": []string{"default"}},
 	}
 
 	cluster := NewClusterKubernetesObject(clusterName, nodeInfo)
@@ -24,4 +25,5 @@ func TestNewClusterKubernetesObject(t *testing.T) {
 	assert.Equal(t, nodeInfo.AvailabilityZones, cluster.Data["availabilityZones"])
 	assert.Equal(t, nodeInfo.NodeTypes, cluster.Data["nodeTypes"])
 	assert.Equal(t, nodeInfo.NumberNodes, cluster.Data["numberNodes"])
+	assert.Equal(t, nodeInfo.Labels["agentpool"], cluster.Data["labels"].(map[string][]string)["agentpool"])
 }

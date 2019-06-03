@@ -46,4 +46,12 @@ func TestNewKubernetesNodeInfo(t *testing.T) {
 	assert.Len(t, nodeInfo.NodeTypes, 2)
 	assert.Contains(t, nodeInfo.NodeTypes, "Standard_D2s_v3")
 	assert.Contains(t, nodeInfo.NodeTypes, "Standard_D8s_v3")
+	// assert that Labels contains all labels present in any node object
+	assert.Contains(t, nodeInfo.Labels["name"], "nodepool-1")
+	assert.Contains(t, nodeInfo.Labels["name"], "nodepool-2")
+	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/region"], "westeurope")
+	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/zone"], "1")
+	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/zone"], "2")
+	assert.Contains(t, nodeInfo.Labels["beta.kubernetes.io/instance-type"], "Standard_D8s_v3")
+	assert.Contains(t, nodeInfo.Labels["beta.kubernetes.io/instance-type"], "Standard_D2s_v3")
 }
