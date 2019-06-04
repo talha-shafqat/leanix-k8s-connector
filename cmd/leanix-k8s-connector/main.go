@@ -31,11 +31,11 @@ const (
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
-	initLogger(viper.GetBool(verboseFlag))
 	err := parseFlags()
 	if err != nil {
 		log.Critical(err)
 	}
+	initLogger(viper.GetBool(verboseFlag))
 	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
