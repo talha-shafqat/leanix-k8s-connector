@@ -16,10 +16,22 @@ func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 	}
 	availabilityZones := set.NewStringSet()
 	nodeTypes := set.NewStringSet()
+	architectures := set.NewStringSet()
+	containerRuntimeVersion := set.NewStringSet()
+	kernelVersion := set.NewStringSet()
+	kubeletVersion := set.NewStringSet()
+	operatingSystem := set.NewStringSet()
+	osImage := set.NewStringSet()
 
 	for _, n := range items {
 		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
 		nodeTypes.Add(n.Labels["beta.kubernetes.io/instance-type"])
+		architectures.Add(n.Status.NodeInfo.Architecture)
+		containerRuntimeVersion.Add(n.Status.NodeInfo.ContainerRuntimeVersion)
+		kernelVersion.Add(n.Status.NodeInfo.KernelVersion)
+		kubeletVersion.Add(n.Status.NodeInfo.KubeletVersion)
+		operatingSystem.Add(n.Status.NodeInfo.OperatingSystem)
+		osImage.Add(n.Status.NodeInfo.OSImage)
 	}
 	memory, err := aggregrateMemoryCapacity(&items)
 	if err != nil {
@@ -35,6 +47,12 @@ func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 	nodeAggregate["numberNodes"] = len(items)
 	nodeAggregate["memoryCapacityGB"] = memory
 	nodeAggregate["cpuCapacity"] = cpus
+	nodeAggregate["architecture"] = architectures.Items()
+	nodeAggregate["containerRuntimeVersion"] = containerRuntimeVersion.Items()
+	nodeAggregate["kernelVersion"] = kernelVersion.Items()
+	nodeAggregate["kubeletVersion"] = kubeletVersion.Items()
+	nodeAggregate["operatingSystem"] = operatingSystem.Items()
+	nodeAggregate["osImage"] = osImage.Items()
 	nodeAggregate["labels"] = labelSet(&items)
 	return nodeAggregate, nil
 }

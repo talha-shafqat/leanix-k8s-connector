@@ -27,6 +27,14 @@ func TestAggregateNodes(t *testing.T) {
 						corev1.ResourceMemory: oneGiB,
 						corev1.ResourceCPU:    oneCore,
 					},
+					NodeInfo: corev1.NodeSystemInfo{
+						Architecture:            "amd64",
+						ContainerRuntimeVersion: "docker://3.0.1",
+						KernelVersion:           "4.15.0-1035-azure",
+						KubeletVersion:          "v1.11.5",
+						OperatingSystem:         "linux",
+						OSImage:                 "Ubuntu 16.04.5 LTS",
+					},
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "nodepool-1",
@@ -43,6 +51,14 @@ func TestAggregateNodes(t *testing.T) {
 					Capacity: corev1.ResourceList{
 						corev1.ResourceMemory: oneGiB,
 						corev1.ResourceCPU:    oneCore,
+					},
+					NodeInfo: corev1.NodeSystemInfo{
+						Architecture:            "amd64",
+						ContainerRuntimeVersion: "docker://3.0.1",
+						KernelVersion:           "4.15.0-1035-azure",
+						KubeletVersion:          "v1.11.5",
+						OperatingSystem:         "linux",
+						OSImage:                 "Ubuntu 16.04.5 LTS",
 					},
 				},
 				ObjectMeta: metav1.ObjectMeta{
@@ -73,6 +89,12 @@ func TestAggregateNodes(t *testing.T) {
 	assert.Equal(t, 2, nodeAggregate["numberNodes"])
 	assert.Equal(t, float64(2), nodeAggregate["memoryCapacityGB"])
 	assert.Equal(t, int64(2), nodeAggregate["cpuCapacity"])
+	assert.ElementsMatch(t, []string{"amd64"}, nodeAggregate["architecture"])
+	assert.ElementsMatch(t, []string{"docker://3.0.1"}, nodeAggregate["containerRuntimeVersion"])
+	assert.ElementsMatch(t, []string{"4.15.0-1035-azure"}, nodeAggregate["kernelVersion"])
+	assert.ElementsMatch(t, []string{"v1.11.5"}, nodeAggregate["kubeletVersion"])
+	assert.ElementsMatch(t, []string{"linux"}, nodeAggregate["operatingSystem"])
+	assert.ElementsMatch(t, []string{"Ubuntu 16.04.5 LTS"}, nodeAggregate["osImage"])
 	for k, v := range expectedLabelAggregate {
 		assert.ElementsMatch(t, v, nodeAggregate["labels"].(map[string][]string)[k])
 	}
