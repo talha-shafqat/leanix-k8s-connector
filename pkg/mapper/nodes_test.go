@@ -8,9 +8,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func TestNewKubernetesNodeInfo(t *testing.T) {
-	// create a dummy nodes
-	nodes := corev1.NodeList{
+func TestAggregateNodes(t *testing.T) {
+	nodes := &corev1.NodeList{
 		Items: []corev1.Node{
 			corev1.Node{
 				ObjectMeta: metav1.ObjectMeta{
@@ -36,22 +35,104 @@ func TestNewKubernetesNodeInfo(t *testing.T) {
 			},
 		},
 	}
-	nodeInfo := NewKubernetesNodeInfo(&nodes)
+	nodeAggregate := aggregrateNodes(nodes)
+	expectedLabelAggregate := map[string][]string{
+		"name": []string{"nodepool-1", "nodepool-2"},
+		"failure-domain.beta.kubernetes.io/region": []string{"westeurope"},
+		"failure-domain.beta.kubernetes.io/zone":   []string{"1", "2"},
+		"beta.kubernetes.io/instance-type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
+	}
 
-	assert.Equal(t, "westeurope", nodeInfo.DataCenter)
-	assert.Len(t, nodeInfo.AvailabilityZones, 2)
-	assert.Contains(t, nodeInfo.AvailabilityZones, "1")
-	assert.Contains(t, nodeInfo.AvailabilityZones, "2")
-	assert.Equal(t, 2, nodeInfo.NumberNodes)
-	assert.Len(t, nodeInfo.NodeTypes, 2)
-	assert.Contains(t, nodeInfo.NodeTypes, "Standard_D2s_v3")
-	assert.Contains(t, nodeInfo.NodeTypes, "Standard_D8s_v3")
-	// assert that Labels contains all labels present in any node object
-	assert.Contains(t, nodeInfo.Labels["name"], "nodepool-1")
-	assert.Contains(t, nodeInfo.Labels["name"], "nodepool-2")
-	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/region"], "westeurope")
-	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/zone"], "1")
-	assert.Contains(t, nodeInfo.Labels["failure-domain.beta.kubernetes.io/zone"], "2")
-	assert.Contains(t, nodeInfo.Labels["beta.kubernetes.io/instance-type"], "Standard_D8s_v3")
-	assert.Contains(t, nodeInfo.Labels["beta.kubernetes.io/instance-type"], "Standard_D2s_v3")
+	assert.Equal(t, "westeurope", nodeAggregate["dataCenter"])
+	assert.ElementsMatch(t, []string{"1", "2"}, nodeAggregate["availabilityZones"])
+	assert.ElementsMatch(t, []string{"Standard_D2s_v3", "Standard_D8s_v3"}, nodeAggregate["nodeTypes"])
+	assert.Equal(t, 2, nodeAggregate["numberNodes"])
+	for k, v := range expectedLabelAggregate {
+		assert.ElementsMatch(t, v, nodeAggregate["labels"].(map[string][]string)[k])
+	}
+}
+
+func TestRedundant(t *testing.T) {
+	type testExpected struct {
+		multipleNodes bool
+		zoneRedundant bool
+	}
+	tests := map[string]struct {
+		input    []corev1.Node
+		expected testExpected
+	}{
+		"single node": {
+			input: []corev1.Node{
+				corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nodepool-1",
+						Labels: map[string]string{
+							"failure-domain.beta.kubernetes.io/zone": "1",
+						},
+					},
+				},
+			},
+			expected: testExpected{
+				multipleNodes: false,
+				zoneRedundant: false,
+			},
+		},
+		"multiple nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nodepool-1",
+						Labels: map[string]string{
+							"failure-domain.beta.kubernetes.io/zone": "1",
+						},
+					},
+				},
+				corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nodepool-2",
+						Labels: map[string]string{
+							"failure-domain.beta.kubernetes.io/zone": "1",
+						},
+					},
+				},
+			},
+			expected: testExpected{
+				multipleNodes: true,
+				zoneRedundant: false,
+			},
+		},
+		"multiple zone redundant nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nodepool-1",
+						Labels: map[string]string{
+							"failure-domain.beta.kubernetes.io/zone": "1",
+						},
+					},
+				},
+				corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nodepool-2",
+						Labels: map[string]string{
+							"failure-domain.beta.kubernetes.io/zone": "2",
+						},
+					},
+				},
+			},
+			expected: testExpected{
+				multipleNodes: true,
+				zoneRedundant: true,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			multipleNodes, zoneRedundant := redundant(&test.input)
+			assert.Equal(t, test.expected.multipleNodes, multipleNodes)
+			assert.Equal(t, test.expected.zoneRedundant, zoneRedundant)
+		})
+	}
+
 }

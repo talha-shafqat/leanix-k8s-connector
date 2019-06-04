@@ -75,9 +75,9 @@ func main() {
 	log.Debug("Listing nodes done.")
 
 	log.Debug("Map nodes to kubernetes object")
-	clusterKubernetesObject := mapper.NewClusterKubernetesObject(
+	clusterKubernetesObject := mapper.MapNodes(
 		viper.GetString("clustername"),
-		mapper.NewKubernetesNodeInfo(nodes),
+		nodes,
 	)
 
 	log.Debug("Map deployments to kubernetes objects")
