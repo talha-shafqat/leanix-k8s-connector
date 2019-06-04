@@ -11,9 +11,23 @@ import (
 )
 
 func TestAggregateNodes(t *testing.T) {
+	oneCore, err := resource.ParseQuantity("1")
+	if err != nil {
+		t.Error(err)
+	}
+	oneGiB, err := resource.ParseQuantity("1Gi")
+	if err != nil {
+		t.Error(err)
+	}
 	nodes := &corev1.NodeList{
 		Items: []corev1.Node{
 			corev1.Node{
+				Status: corev1.NodeStatus{
+					Capacity: corev1.ResourceList{
+						corev1.ResourceMemory: oneGiB,
+						corev1.ResourceCPU:    oneCore,
+					},
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "nodepool-1",
 					Labels: map[string]string{
@@ -25,6 +39,12 @@ func TestAggregateNodes(t *testing.T) {
 				},
 			},
 			corev1.Node{
+				Status: corev1.NodeStatus{
+					Capacity: corev1.ResourceList{
+						corev1.ResourceMemory: oneGiB,
+						corev1.ResourceCPU:    oneCore,
+					},
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "nodepool-2",
 					Labels: map[string]string{
@@ -51,6 +71,8 @@ func TestAggregateNodes(t *testing.T) {
 	assert.ElementsMatch(t, []string{"1", "2"}, nodeAggregate["availabilityZones"])
 	assert.ElementsMatch(t, []string{"Standard_D2s_v3", "Standard_D8s_v3"}, nodeAggregate["nodeTypes"])
 	assert.Equal(t, 2, nodeAggregate["numberNodes"])
+	assert.Equal(t, float64(2), nodeAggregate["memoryCapacityGB"])
+	assert.Equal(t, int64(2), nodeAggregate["cpuCapacity"])
 	for k, v := range expectedLabelAggregate {
 		assert.ElementsMatch(t, v, nodeAggregate["labels"].(map[string][]string)[k])
 	}
@@ -211,6 +233,80 @@ func TestAggregrateMemoryCapacity(t *testing.T) {
 			memory, err := aggregrateMemoryCapacity(&test.input)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, memory)
+		})
+	}
+}
+
+func TestAggregrateCPUCapacity(t *testing.T) {
+	oneCore, err := resource.ParseQuantity("1")
+	if err != nil {
+		t.Error(err)
+	}
+	twoCores, err := resource.ParseQuantity("2")
+	if err != nil {
+		t.Error(err)
+	}
+	tests := map[string]struct {
+		input    []corev1.Node
+		expected int64
+	}{
+		"single 1 core node": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceCPU: oneCore,
+						},
+					},
+				},
+			},
+			expected: 1,
+		},
+		"two 1 core nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceCPU: oneCore,
+						},
+					},
+				},
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceCPU: oneCore,
+						},
+					},
+				},
+			},
+			expected: 2,
+		},
+		"1 core and 2 core nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceCPU: oneCore,
+						},
+					},
+				},
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceCPU: twoCores,
+						},
+					},
+				},
+			},
+			expected: 3,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			cores, err := aggregrateCPUCapacity(&test.input)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, cores)
 		})
 	}
 }
