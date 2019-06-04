@@ -3,6 +3,8 @@ package mapper
 import (
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,13 +37,15 @@ func TestAggregateNodes(t *testing.T) {
 			},
 		},
 	}
-	nodeAggregate := aggregrateNodes(nodes)
 	expectedLabelAggregate := map[string][]string{
 		"name": []string{"nodepool-1", "nodepool-2"},
 		"failure-domain.beta.kubernetes.io/region": []string{"westeurope"},
 		"failure-domain.beta.kubernetes.io/zone":   []string{"1", "2"},
 		"beta.kubernetes.io/instance-type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
 	}
+
+	nodeAggregate, err := aggregrateNodes(nodes)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "westeurope", nodeAggregate["dataCenter"])
 	assert.ElementsMatch(t, []string{"1", "2"}, nodeAggregate["availabilityZones"])
@@ -135,4 +139,78 @@ func TestRedundant(t *testing.T) {
 		})
 	}
 
+}
+
+func TestAggregrateMemoryCapacity(t *testing.T) {
+	oneGiB, err := resource.ParseQuantity("1Gi")
+	if err != nil {
+		t.Error(err)
+	}
+	fiveTwelveMiB, err := resource.ParseQuantity("512Mi")
+	if err != nil {
+		t.Error(err)
+	}
+	tests := map[string]struct {
+		input    []corev1.Node
+		expected float64
+	}{
+		"single 1Gi node": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceMemory: oneGiB,
+						},
+					},
+				},
+			},
+			expected: 1,
+		},
+		"two 1Gi nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceMemory: oneGiB,
+						},
+					},
+				},
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceMemory: oneGiB,
+						},
+					},
+				},
+			},
+			expected: 2,
+		},
+		"512Mi and 1Gi nodes": {
+			input: []corev1.Node{
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceMemory: oneGiB,
+						},
+					},
+				},
+				corev1.Node{
+					Status: corev1.NodeStatus{
+						Capacity: corev1.ResourceList{
+							corev1.ResourceMemory: fiveTwelveMiB,
+						},
+					},
+				},
+			},
+			expected: 1.5,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			memory, err := aggregrateMemoryCapacity(&test.input)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, memory)
+		})
+	}
 }

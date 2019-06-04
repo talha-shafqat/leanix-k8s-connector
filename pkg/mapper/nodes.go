@@ -1,16 +1,18 @@
 package mapper
 
 import (
+	"fmt"
+
 	"github.com/leanix/leanix-k8s-connector/pkg/set"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-func aggregrateNodes(nodes *corev1.NodeList) map[string]interface{} {
+func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 	nodeAggregate := make(map[string]interface{})
 	items := nodes.Items
 	if len(items) == 0 {
-		return nodeAggregate
+		return nodeAggregate, nil
 	}
 	availabilityZones := set.NewStringSet()
 	nodeTypes := set.NewStringSet()
@@ -19,12 +21,37 @@ func aggregrateNodes(nodes *corev1.NodeList) map[string]interface{} {
 		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
 		nodeTypes.Add(n.Labels["beta.kubernetes.io/instance-type"])
 	}
+	memory, err := aggregrateMemoryCapacity(&items)
+	if err != nil {
+		return nil, err
+	}
 	nodeAggregate["availabilityZones"] = availabilityZones.Items()
 	nodeAggregate["dataCenter"] = items[0].Labels["failure-domain.beta.kubernetes.io/region"]
 	nodeAggregate["nodeTypes"] = nodeTypes.Items()
 	nodeAggregate["numberNodes"] = len(items)
+	nodeAggregate["memoryCapacityGB"] = memory
 	nodeAggregate["labels"] = labelSet(&items)
-	return nodeAggregate
+	return nodeAggregate, nil
+}
+
+func aggregrateMemoryCapacity(nodes *[]corev1.Node) (float64, error) {
+	var memoryCapacityGB float64
+	for _, n := range *nodes {
+		// The Memory() call returns the memory as resource.Quantity. 'Quantity is a fixed-point representation of a number.'
+		// In order to calculate the memory capacity of all nodes, we get the bytes as int64 (hoping it does not exeed the int64 limit...).
+		// We convert the bytes here to GiB to make sure that we do not exeed the limit of float64. This introcudes a rounding error,
+		// which we accept, because a percice value is not of interest for the user output.
+		b, ok := n.Status.Capacity.Memory().AsInt64()
+		if !ok {
+			return 0, fmt.Errorf("Failed to get memory quantity as type int64")
+		}
+		memoryCapacityGB = memoryCapacityGB + byteToGiB(b)
+	}
+	return memoryCapacityGB, nil
+}
+
+func byteToGiB(b int64) float64 {
+	return float64(b) / 1024 / 1024 / 1024
 }
 
 func labelSet(nodes *[]corev1.Node) map[string][]string {

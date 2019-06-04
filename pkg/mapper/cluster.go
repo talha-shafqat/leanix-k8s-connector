@@ -6,12 +6,15 @@ import (
 
 // MapNodes mapps a list of nodes and a given cluster name into a KubernetesObject.
 // In the process it aggregates the information from muliple nodes into one cluster object.
-func MapNodes(clusterName string, nodes *corev1.NodeList) KubernetesObject {
-	nodeAggregate := aggregrateNodes(nodes)
+func MapNodes(clusterName string, nodes *corev1.NodeList) (*KubernetesObject, error) {
+	nodeAggregate, err := aggregrateNodes(nodes)
+	if err != nil {
+		return nil, err
+	}
 	nodeAggregate["clusterName"] = clusterName
-	return KubernetesObject{
+	return &KubernetesObject{
 		ID:   clusterName,
 		Type: "cluster",
 		Data: nodeAggregate,
-	}
+	}, nil
 }

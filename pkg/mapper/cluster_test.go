@@ -38,7 +38,8 @@ func TestMapNodes(t *testing.T) {
 		},
 	}
 
-	cluster := MapNodes(clusterName, nodes)
+	cluster, err := MapNodes(clusterName, nodes)
+	assert.NoError(t, err)
 
 	assert.Equal(t, clusterName, cluster.ID)
 	assert.Equal(t, clusterName, cluster.Data["clusterName"])
