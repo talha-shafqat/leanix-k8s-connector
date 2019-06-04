@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/set"
 
@@ -22,6 +23,8 @@ func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 	kubeletVersion := set.NewStringSet()
 	operatingSystem := set.NewStringSet()
 	osImage := set.NewStringSet()
+	firstCreatedNode := items[0].ObjectMeta.CreationTimestamp
+	lastCreatedNode := items[0].ObjectMeta.CreationTimestamp
 
 	for _, n := range items {
 		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
@@ -32,6 +35,13 @@ func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 		kubeletVersion.Add(n.Status.NodeInfo.KubeletVersion)
 		operatingSystem.Add(n.Status.NodeInfo.OperatingSystem)
 		osImage.Add(n.Status.NodeInfo.OSImage)
+		nodeCreatedTimestamp := n.ObjectMeta.CreationTimestamp
+		if nodeCreatedTimestamp.Before(&firstCreatedNode) {
+			firstCreatedNode = nodeCreatedTimestamp
+		}
+		if nodeCreatedTimestamp.After(lastCreatedNode.Time) {
+			lastCreatedNode = nodeCreatedTimestamp
+		}
 	}
 	memory, err := aggregrateMemoryCapacity(&items)
 	if err != nil {
@@ -54,6 +64,8 @@ func aggregrateNodes(nodes *corev1.NodeList) (map[string]interface{}, error) {
 	nodeAggregate["operatingSystem"] = operatingSystem.Items()
 	nodeAggregate["osImage"] = osImage.Items()
 	nodeAggregate["labels"] = labelSet(&items)
+	nodeAggregate["firstCreatedNode"] = firstCreatedNode.UTC().Format(time.RFC3339)
+	nodeAggregate["lastCreatedNode"] = lastCreatedNode.UTC().Format(time.RFC3339)
 	return nodeAggregate, nil
 }
 

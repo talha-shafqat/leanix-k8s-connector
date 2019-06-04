@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -37,7 +38,8 @@ func TestAggregateNodes(t *testing.T) {
 					},
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "nodepool-1",
+					CreationTimestamp: metav1.Date(2019, 01, 18, 8, 55, 20, 0, time.UTC),
+					Name:              "nodepool-1",
 					Labels: map[string]string{
 						"name": "nodepool-1",
 						"failure-domain.beta.kubernetes.io/region": "westeurope",
@@ -62,7 +64,8 @@ func TestAggregateNodes(t *testing.T) {
 					},
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "nodepool-2",
+					CreationTimestamp: metav1.Date(2019, 01, 12, 8, 55, 20, 0, time.UTC),
+					Name:              "nodepool-2",
 					Labels: map[string]string{
 						"name": "nodepool-2",
 						"failure-domain.beta.kubernetes.io/region": "westeurope",
@@ -84,6 +87,8 @@ func TestAggregateNodes(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "westeurope", nodeAggregate["dataCenter"])
+	assert.Equal(t, "2019-01-12T08:55:20Z", nodeAggregate["firstCreatedNode"])
+	assert.Equal(t, "2019-01-18T08:55:20Z", nodeAggregate["lastCreatedNode"])
 	assert.ElementsMatch(t, []string{"1", "2"}, nodeAggregate["availabilityZones"])
 	assert.ElementsMatch(t, []string{"Standard_D2s_v3", "Standard_D8s_v3"}, nodeAggregate["nodeTypes"])
 	assert.Equal(t, 2, nodeAggregate["numberNodes"])
