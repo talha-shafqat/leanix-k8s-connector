@@ -1,0 +1,30 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "leanix-k8s-connector.fullname" . }}
+  labels:
+{{ include "leanix-k8s-connector.labels" . | indent 4 }}
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: connector
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            args:
+            - "--clustername {{ .Values.args.clustername }}"
+            {{- if ".Values.args.verbose" }}
+            - "--verbose"
+            {{- end }}
+            - "--storage-backend {{ .Values.args.storageBackend }}"
+            {{- if eq "{{ .Values.args.storageBackend }}" "file" }}
+            - "--local-file-path {{ .Values.args.localFilePath }}"
+            {{- else if eq "{{ .Values.args.storageBackend }}" "azureblob" }}
+            - "--azure-account-key {{ .Values.args.azureblob.accountKey }}"
+            - "--azure-account-name {{ .Values.args.azureblob.accountName }}"
+            - "--azure-container {{ .Values.args.azureblob.container }}"
+            {{- end }}
+            - "--log-file {{ .Values.args.logFile }}"
+          restartPolicy: OnFailure
