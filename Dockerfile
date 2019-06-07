@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/static
+FROM alpine:3.9.4
 
 ADD bin/leanix-k8s-connector /leanix-k8s-connector
 
