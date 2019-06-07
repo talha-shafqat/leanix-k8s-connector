@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: leanix/leanix-k8s-connector
+  repository: leanix.azurecr.io/leanix-k8s-connector
   tag: latest
   pullPolicy: Always
 
