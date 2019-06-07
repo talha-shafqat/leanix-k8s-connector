@@ -66,7 +66,7 @@ all: clean test build
 
 local: clean test-local build-local
 
-acr: clean test-local build-local build-acr
+acr: clean test-local build build-acr
 
 clean:
 	$(RM) bin/$(PROJECT)
