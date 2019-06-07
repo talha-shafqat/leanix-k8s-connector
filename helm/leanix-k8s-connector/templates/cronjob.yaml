@@ -6,6 +6,7 @@ metadata:
 {{ include "leanix-k8s-connector.labels" . | indent 4 }}
 spec:
   schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
