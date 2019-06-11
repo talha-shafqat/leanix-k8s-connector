@@ -11,8 +11,7 @@ VERSION := $(shell git describe --tags --always --dirty)
 #VERSION := 1.2.3
 
 IMAGE := $(DOCKER_NAMESPACE)/$(PROJECT):$(VERSION)
-
-BUILD_CMD=go build -o bin/$(PROJECT) -ldflags "-X $(go list -m)/pkg/version.VERSION=${VERSION}" ./cmd/$(PROJECT)/main.go
+BUILD_CMD=go build -o bin/$(PROJECT) -ldflags '-X $(go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
 
 TEST_CMD=go test ./pkg/...
 
