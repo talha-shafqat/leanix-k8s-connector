@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+rbac: true
+
 image:
   repository: leanix.azurecr.io/leanix-k8s-connector
   tag: latest
