@@ -2,6 +2,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: {{ include "leanix-k8s-connector.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
 {{ include "leanix-k8s-connector.labels" . | indent 4 }}
 spec:
@@ -11,6 +12,9 @@ spec:
     spec:
       template:
         spec:
+          {{- if .Values.rbac -}}
+          serviceAccountName: leanix-k8s-connector
+          {{- end -}}
           containers:
           - name: connector
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
