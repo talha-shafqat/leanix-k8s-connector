@@ -15,32 +15,29 @@ BUILD_CMD=go build -o bin/$(PROJECT) -ldflags '-X $(go list -m)/pkg/version.VERS
 
 TEST_CMD=go test ./pkg/...
 
-DOCKER_BUILD_CMD=docker run \
+DOCKER_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-build \
+		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
+		-e CGO_ENABLED=0 \
 		-v $(PWD):/tmp/$(PROJECT) \
 		-w /tmp/$(PROJECT) \
 		golang:$(GOVERSION) \
+
+DOCKER_BUILD_CMD=$(DOCKER_CMD) \
 		$(BUILD_CMD)
 
-DOCKER_TEST_CMD=docker run \
-		--rm \
-		--name $(PROJECT)-test \
-		-e GOARCH=$(GOARCH) \
-		-e GOOS=$(GOOS) \
-		-v $(PWD):/tmp/$(PROJECT) \
-		-w /tmp/$(PROJECT) \
-		golang:$(GOVERSION) \
+DOCKER_TEST_CMD=$(DOCKER_CMD) \
 		$(TEST_CMD)
 
 ifdef GOPATH
 DOCKER_BUILD_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-build \
+		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
+		-e CGO_ENABLED=0 \
 		-v $(GOPATH)/pkg:/go/pkg \
 		-v $(PWD):/tmp/$(PROJECT) \
 		-w /tmp/$(PROJECT) \
@@ -49,9 +46,10 @@ DOCKER_BUILD_CMD=docker run \
 
 DOCKER_TEST_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-test \
+		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
+		-e CGO_ENABLED=0 \
 		-v $(GOPATH)/pkg:/go/pkg \
 		-v $(PWD):/tmp/$(PROJECT) \
 		-w /tmp/$(PROJECT) \
