@@ -168,7 +168,7 @@ func initLogger(logFile string, verbose bool) {
 	// file logging backend
 	f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		log.Warningf("unable to log to 'leanix-k8s-connector.log': %s\n", err)
+		log.Warningf("unable to log to '%s': %s\n", logFile, err)
 	}
 	fileLogger := logging.NewLogBackend(f, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
