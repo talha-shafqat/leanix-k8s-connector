@@ -26,16 +26,17 @@ const (
 	azureContainerFlag   string = "azure-container"
 	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
+	logFileFlag          string = "log-file"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
-	initLogger(viper.GetBool(verboseFlag))
 	err := parseFlags()
 	if err != nil {
 		log.Critical(err)
 	}
+	initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
 	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
@@ -127,12 +128,13 @@ func parseFlags() error {
 		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
 	}
 	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
-	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed. (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
+	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
 	flag.String(azureContainerFlag, "", "Azure storage account container")
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
+	flag.String(logFileFlag, "./leanix-k8s-connector.log", "path where the debug log file should be placed")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)
@@ -150,7 +152,7 @@ func parseFlags() error {
 }
 
 // InitLogger initialise the logger for stdout and log file
-func initLogger(verbose bool) {
+func initLogger(logFile string, verbose bool) {
 	format := logging.MustStringFormatter(`%{time:15:04:05.000} ▶ [%{level:.4s}] %{message}`)
 	logging.SetFormatter(format)
 
@@ -164,9 +166,9 @@ func initLogger(verbose bool) {
 	}
 
 	// file logging backend
-	f, err := os.OpenFile("leanix-k8s-connector.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		log.Warningf("unable to log to 'leanix-k8s-connector.log': %s\n", err)
+		log.Warningf("unable to log to '%s': %s\n", logFile, err)
 	}
 	fileLogger := logging.NewLogBackend(f, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
