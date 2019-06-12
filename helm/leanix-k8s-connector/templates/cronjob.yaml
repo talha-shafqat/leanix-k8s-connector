@@ -12,26 +12,33 @@ spec:
     spec:
       template:
         spec:
-          {{- if .Values.rbac -}}
+          {{- if .Values.rbac }}
           serviceAccountName: leanix-k8s-connector
-          {{- end -}}
+          {{- end }}
           containers:
           - name: connector
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
             args:
-            - "--clustername {{ .Values.args.clustername }}"
+            - "--clustername"
+            - "{{ .Values.args.clustername }}"
             {{- if ".Values.args.verbose" }}
             - "--verbose"
             {{- end }}
-            - "--storage-backend {{ .Values.args.storageBackend }}"
+            - "--storage-backend"
+            - "{{ .Values.args.storageBackend }}"
             {{- if eq "{{ .Values.args.storageBackend }}" "file" }}
-            - "--local-file-path {{ .Values.args.localFilePath }}"
+            - "--local-file-path"
+            - "{{ .Values.args.localFilePath }}"
             {{- else if eq "{{ .Values.args.storageBackend }}" "azureblob" }}
-            - "--azure-account-key {{ .Values.args.azureblob.accountKey }}"
-            - "--azure-account-name {{ .Values.args.azureblob.accountName }}"
-            - "--azure-container {{ .Values.args.azureblob.container }}"
+            - "--azure-account-key"
+            - "{{ .Values.args.azureblob.accountKey }}"
+            - "--azure-account-name"
+            - "{{ .Values.args.azureblob.accountName }}"
+            - "--azure-container"
+            - "{{ .Values.args.azureblob.container }}"
             {{- end }}
-            - "--log-file {{ .Values.args.logFile }}"
+            - "--log-file"
+            - "{{ .Values.args.logFile }}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
