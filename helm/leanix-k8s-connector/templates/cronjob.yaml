@@ -21,7 +21,7 @@ spec:
             args:
             - "--clustername"
             - "{{ .Values.args.clustername }}"
-            {{- if ".Values.args.verbose" }}
+            {{- if .Values.args.verbose }}
             - "--verbose"
             {{- end }}
             - "--storage-backend"
