@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
@@ -14,11 +13,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/op/go-logging"
-	"k8s.io/client-go/tools/clientcmd"
+	restclient "k8s.io/client-go/rest"
 )
 
 const (
-	kubeConfigFlag       string = "kubeconfig"
 	clusterNameFlag      string = "clustername"
 	storageBackendFlag   string = "storage-backend"
 	azureAccountNameFlag string = "azure-account-name"
@@ -40,11 +38,10 @@ func main() {
 	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", viper.GetString(kubeConfigFlag))
+	config, err := restclient.InClusterConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to load kube config. Running in Kubernetes?\n%s", err)
 	}
-	log.Debugf("Using kube config: %s", viper.GetString(kubeConfigFlag))
 	log.Debugf("Kubernetes master from config: %s", config.Host)
 
 	kubernetes, err := kubernetes.NewAPI(config)
@@ -122,11 +119,6 @@ func main() {
 }
 
 func parseFlags() error {
-	if home := homeDir(); home != "" {
-		flag.String(kubeConfigFlag, filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		flag.String(kubeConfigFlag, "", "absolute path to the kubeconfig file")
-	}
 	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
 	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
@@ -172,11 +164,4 @@ func initLogger(logFile string, verbose bool) {
 	}
 	fileLogger := logging.NewLogBackend(f, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
 }
