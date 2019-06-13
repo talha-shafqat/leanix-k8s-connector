@@ -1,0 +1,38 @@
+# Default values for leanix-k8s-connector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+rbac: true
+
+image:
+  repository: leanix.azurecr.io/leanix-k8s-connector
+  tag: latest
+  pullPolicy: Always
+
+args:
+  clustername: kubernetes
+  verbose: false
+  storageBackend: file
+  localFilePath: "."
+  azureblob:
+    accountKey: ""
+    accountName: ""
+    container: ""
+  logFile: /tmp/leanix-k8s-connector.log
+
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
