@@ -1,8 +1,8 @@
-GOARCH=amd64
-GOOS=linux
-GOVERSION=1.12
-PROJECT=leanix-k8s-connector
-DOCKER_NAMESPACE=leanix.azurecr.io
+GOARCH ?= amd64
+GOOS ?= linux
+GOVERSION ?= 1.12
+PROJECT ?= leanix-k8s-connector
+DOCKER_NAMESPACE ?= leanix.azurecr.io
 
 # This version-strategy uses git tags to set the version string
 VERSION := $(shell git describe --tags --always --dirty)

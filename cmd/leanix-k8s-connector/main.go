@@ -73,10 +73,13 @@ func main() {
 	log.Debug("Listing nodes done.")
 
 	log.Debug("Map nodes to kubernetes object")
-	clusterKubernetesObject := mapper.NewClusterKubernetesObject(
+	clusterKubernetesObject, err := mapper.MapNodes(
 		viper.GetString("clustername"),
-		mapper.NewKubernetesNodeInfo(nodes),
+		nodes,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Debug("Map deployments to kubernetes objects")
 	deploymentKubernetesObjects := mapper.MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
@@ -84,7 +87,7 @@ func main() {
 	statefulsetKubernetesObjects := mapper.MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
 
 	kubernetesObjects := make([]mapper.KubernetesObject, 0)
-	kubernetesObjects = append(kubernetesObjects, clusterKubernetesObject)
+	kubernetesObjects = append(kubernetesObjects, *clusterKubernetesObject)
 	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
