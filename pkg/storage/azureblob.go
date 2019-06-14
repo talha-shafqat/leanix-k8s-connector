@@ -48,12 +48,25 @@ func NewAzureBlob(azureOpts *AzureBlobOpts) (*AzureBlob, error) {
 }
 
 // Upload uploads a file to azure blob storage
-func (u AzureBlob) Upload(content []byte) error {
+func (u *AzureBlob) Upload(ldif []byte, log []byte) error {
 	if u.Container == nil {
 		return errors.New("unable to obtain a container reference")
 	}
 
-	blobReference := u.Container.GetBlobReference("ldif.json")
+	err := u.uploadFile("ldif.json", ldif)
+	if err != nil {
+		return err
+	}
+	err = u.uploadFile("leanix-k8s-connector.log", log)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *AzureBlob) uploadFile(name string, content []byte) error {
+	blobReference := u.Container.GetBlobReference(name)
 
 	// create the blob if it does not exist
 	err := blobReference.PutAppendBlob(nil)

@@ -10,11 +10,15 @@ const (
 	AzureBlobStorage string = "azureblob"
 	// FileStorage is a constant for the file storage identifier
 	FileStorage string = "file"
+	// LdifFileName is a constant for the file name used to store the ldif content
+	LdifFileName string = "ldif.json"
+	// LogFileName is a constant for the file name used to store the log output
+	LogFileName string = "leanix-k8s-connector.log"
 )
 
 // Backend exposes a common interface for all storage mechanisms
 type Backend interface {
-	Upload(content []byte) error
+	Upload(ldif []byte, log []byte) error
 }
 
 // NewBackend create a new storage backend for the given storage backend type

@@ -32,8 +32,20 @@ func NewLocalFile(path string) (*LocalFile, error) {
 	return lf, nil
 }
 
-// Upload persists the content in a local file
-func (u *LocalFile) Upload(content []byte) error {
-	location := path.Join(u.Path, "ldif.json")
+// Upload persists the ldif content and the log file content in a local files
+func (u *LocalFile) Upload(ldif []byte, log []byte) error {
+	err := u.uploadFile(path.Join(u.Path, LdifFileName), ldif)
+	if err != nil {
+		return err
+	}
+	err = u.uploadFile(path.Join(u.Path, LogFileName), log)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *LocalFile) uploadFile(name string, content []byte) error {
+	location := path.Join(u.Path, name)
 	return ioutil.WriteFile(location, content, 0644)
 }
