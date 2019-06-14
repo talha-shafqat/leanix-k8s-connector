@@ -26,10 +26,10 @@ spec:
             {{- end }}
             - "--storage-backend"
             - "{{ .Values.args.storageBackend }}"
-            {{- if eq "{{ .Values.args.storageBackend }}" "file" }}
+            {{- if eq .Values.args.storageBackend "file" }}
             - "--local-file-path"
             - "{{ .Values.args.localFilePath }}"
-            {{- else if eq "{{ .Values.args.storageBackend }}" "azureblob" }}
+            {{- else if eq .Values.args.storageBackend "azureblob" }}
             - "--azure-account-key"
             - "{{ .Values.args.azureblob.accountKey }}"
             - "--azure-account-name"
