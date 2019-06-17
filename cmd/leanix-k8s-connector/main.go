@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -34,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Critical(err)
 	}
-	initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
+	logBuffer := initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
 	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
@@ -118,7 +120,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uploader.Upload(ldifByte)
+	uploader.Upload(ldifByte, logBuffer.Bytes())
 }
 
 func parseFlags() error {
@@ -147,7 +149,7 @@ func parseFlags() error {
 }
 
 // InitLogger initialise the logger for stdout and log file
-func initLogger(logFile string, verbose bool) {
+func initLogger(logFile string, verbose bool) *bytes.Buffer {
 	format := logging.MustStringFormatter(`%{time:15:04:05.000} ▶ [%{level:.4s}] %{message}`)
 	logging.SetFormatter(format)
 
@@ -165,6 +167,9 @@ func initLogger(logFile string, verbose bool) {
 	if err != nil {
 		log.Warningf("unable to log to '%s': %s\n", logFile, err)
 	}
-	fileLogger := logging.NewLogBackend(f, "", 0)
+	var mem bytes.Buffer
+	multiWriter := io.MultiWriter(f, &mem)
+	fileLogger := logging.NewLogBackend(multiWriter, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
+	return &mem
 }
