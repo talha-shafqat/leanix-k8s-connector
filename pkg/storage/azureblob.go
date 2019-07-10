@@ -53,7 +53,7 @@ func (u *AzureBlob) Upload(ldif []byte, log []byte) error {
 		return errors.New("unable to obtain a container reference")
 	}
 
-	err := u.uploadFile("ldif.json", ldif)
+	err := u.uploadFile(LdifFileName, ldif)
 	if err != nil {
 		return err
 	}
