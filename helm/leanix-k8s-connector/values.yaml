@@ -19,6 +19,7 @@ args:
     accountName: ""
     container: ""
   logFile: /tmp/leanix-k8s-connector.log
+  connectorID: leanix-kubernetes-connector
 
 nameOverride: ""
 fullnameOverride: ""

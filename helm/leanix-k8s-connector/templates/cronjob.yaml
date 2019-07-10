@@ -39,6 +39,8 @@ spec:
             {{- end }}
             - "--log-file"
             - "{{ .Values.args.logFile }}"
+            - "--connector-id"
+            - "{{ .Values.args.connectorID }}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
