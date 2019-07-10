@@ -16,12 +16,16 @@ pipeline {
     post {
         success {
             script {
-                pullRequest.createStatus(status: 'success')
+                if (env.CHANGE_ID) {
+                    pullRequest.createStatus(status: 'success')
+                }
             }
         }
         failure {
             script {
-                pullRequest.createStatus(status: 'failure')
+                if (env.CHANGE_ID) {
+                    pullRequest.createStatus(status: 'failure')
+                }
             }
         }
     }
