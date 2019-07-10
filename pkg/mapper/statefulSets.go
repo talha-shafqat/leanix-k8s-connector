@@ -22,7 +22,7 @@ func MapStatefulSet(clusterName string, statefulset appsv1.StatefulSet, nodes *[
 		Data: make(map[string]interface{}),
 	}
 	for k, v := range statefulset.Labels {
-		kubernetesObject.Data[k] = v
+		kubernetesObject.Data[replacer.Replace(k)] = v
 	}
 	redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
 	kubernetesObject.Data["clusterName"] = clusterName
