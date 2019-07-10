@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -146,7 +145,10 @@ func parseFlags() error {
 	replacer := strings.NewReplacer("-", "_")
 	viper.SetEnvKeyReplacer(replacer)
 	if viper.GetString(clusterNameFlag) == "" {
-		return errors.New("clustername flag must be set")
+		return fmt.Errorf("%s flag must be set", clusterNameFlag)
+	}
+	if viper.GetString(connectorIDFlag) == "" {
+		return fmt.Errorf("%s flag must be set", connectorIDFlag)
 	}
 	return nil
 }
