@@ -15,10 +15,14 @@ pipeline {
     }
     post {
         success {
-            githubNotify status: 'SUCCESS'
+            script {
+                pullRequest.createStatus(status: 'success')
+            }
         }
         failure {
-            githubNotify status: 'FAILURE'
+            script {
+                pullRequest.createStatus(status: 'failure')
+            }
         }
     }
 }
