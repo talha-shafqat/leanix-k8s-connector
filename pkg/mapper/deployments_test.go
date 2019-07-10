@@ -115,7 +115,7 @@ func TestMapDeployment(t *testing.T) {
 
 			assert.Equal(t, result.ID, id.String())
 			assert.Equal(t, result.Type, "deployment")
-			assert.Equal(t, result.Data["app.kubernetes.io/name"], deploymentName)
+			assert.Equal(t, result.Data["app_kubernetes_io_name"], deploymentName)
 			assert.Equal(t, result.Data["clusterName"], clusterName)
 			assert.Equal(t, result.Data["isStateful"], false)
 			assert.Equal(t, result.Data["isRedundant"], test.expected.isRedundant)
