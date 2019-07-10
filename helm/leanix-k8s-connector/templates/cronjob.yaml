@@ -40,7 +40,7 @@ spec:
             - "--log-file"
             - "{{ .Values.args.logFile }}"
             - "--connector-id"
-            - "{{ .Values.args.connectorID }}"
+            - "{{ .Values.args.connectorID | default uuidv4}}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
