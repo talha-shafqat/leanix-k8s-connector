@@ -27,6 +27,7 @@ const (
 	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
 	logFileFlag          string = "log-file"
+	connectorID          string = "connector-id"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -37,7 +38,7 @@ func main() {
 		log.Critical(err)
 	}
 	logBuffer := initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
-	log.Debugf("Target kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
+	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
 	config, err := restclient.InClusterConfig()
@@ -74,7 +75,7 @@ func main() {
 	}
 	log.Debug("Listing nodes done.")
 
-	log.Debug("Map nodes to kubernetes object")
+	log.Debug("Map nodes to Kubernetes object")
 	clusterKubernetesObject, err := mapper.MapNodes(
 		viper.GetString("clustername"),
 		nodes,
@@ -83,9 +84,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debug("Map deployments to kubernetes objects")
+	log.Debug("Map deployments to Kubernetes objects")
 	deploymentKubernetesObjects := mapper.MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
-	log.Debug("Map statefulsets to kubernetes objects")
+	log.Debug("Map statefulsets to Kubernetes objects")
 	statefulsetKubernetesObjects := mapper.MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
 
 	kubernetesObjects := make([]mapper.KubernetesObject, 0)
@@ -94,11 +95,11 @@ func main() {
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	ldif := mapper.LDIF{
-		ConnectorID:        "leanix-k8s-connector",
+		ConnectorID:        viper.GetString(connectorID),
 		ConnectorType:      "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
-		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
+		Description:        "Map Kubernetes objects to LeanIX Fact Sheets",
 		Content:            kubernetesObjects,
 	}
 
@@ -125,7 +126,7 @@ func main() {
 }
 
 func parseFlags() error {
-	flag.String(clusterNameFlag, "", "unique name of the kubernets cluster")
+	flag.String(clusterNameFlag, "", "unique name of the Kubernetes cluster")
 	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
@@ -133,6 +134,7 @@ func parseFlags() error {
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(logFileFlag, "./leanix-k8s-connector.log", "path where the debug log file should be placed")
+	flag.String(connectorID, "", "unique id of the LeanIX Kubernetes connector")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)
