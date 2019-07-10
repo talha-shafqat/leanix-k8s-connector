@@ -22,7 +22,7 @@ func MapDeployment(clusterName string, deployment appsv1.Deployment, nodes *[]co
 		Data: make(map[string]interface{}),
 	}
 	for k, v := range deployment.Labels {
-		kubernetesObject.Data[k] = v
+		kubernetesObject.Data[replacer.Replace(k)] = v
 	}
 	redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
 	kubernetesObject.Data["clusterName"] = clusterName

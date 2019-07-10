@@ -108,7 +108,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debugf("Upload ldif.json to %s", viper.GetString("storage-backend"))
+	log.Debugf("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
 	azureOpts := storage.AzureBlobOpts{
 		AccountName: viper.GetString(azureAccountNameFlag),
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
@@ -126,7 +126,7 @@ func main() {
 
 func parseFlags() error {
 	flag.String(clusterNameFlag, "", "unique name of the Kubernetes cluster")
-	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the ldif.json file is placed (%s, %s)", storage.FileStorage, storage.AzureBlobStorage))
+	flag.String(storageBackendFlag, storage.FileStorage, fmt.Sprintf("storage where the %s file is placed (%s, %s)", storage.LdifFileName, storage.FileStorage, storage.AzureBlobStorage))
 	flag.String(azureAccountNameFlag, "", "Azure storage account name")
 	flag.String(azureAccountKeyFlag, "", "Azure storage account key")
 	flag.String(azureContainerFlag, "", "Azure storage account container")

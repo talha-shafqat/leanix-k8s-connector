@@ -115,7 +115,7 @@ func TestMapStatefulSet(t *testing.T) {
 
 			assert.Equal(t, result.ID, id.String())
 			assert.Equal(t, result.Type, "statefulSet")
-			assert.Equal(t, result.Data["app.kubernetes.io/name"], name)
+			assert.Equal(t, result.Data["app_kubernetes_io_name"], name)
 			assert.Equal(t, result.Data["clusterName"], clusterName)
 			assert.Equal(t, result.Data["isStateful"], true)
 			assert.Equal(t, result.Data["isRedundant"], test.expected.isRedundant)

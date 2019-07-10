@@ -11,7 +11,7 @@ const (
 	// FileStorage is a constant for the file storage identifier
 	FileStorage string = "file"
 	// LdifFileName is a constant for the file name used to store the ldif content
-	LdifFileName string = "ldif.json"
+	LdifFileName string = "kubernetes.ldif"
 	// LogFileName is a constant for the file name used to store the log output
 	LogFileName string = "leanix-k8s-connector.log"
 )
