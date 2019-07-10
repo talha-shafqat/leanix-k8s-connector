@@ -27,7 +27,7 @@ const (
 	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
 	logFileFlag          string = "log-file"
-	connectorID          string = "connector-id"
+	connectorIDFlag      string = "connector-id"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -95,7 +95,7 @@ func main() {
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	ldif := mapper.LDIF{
-		ConnectorID:        viper.GetString(connectorID),
+		ConnectorID:        viper.GetString(connectorIDFlag),
 		ConnectorType:      "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
@@ -134,7 +134,7 @@ func parseFlags() error {
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(logFileFlag, "./leanix-k8s-connector.log", "path where the debug log file should be placed")
-	flag.String(connectorID, "", "unique id of the LeanIX Kubernetes connector")
+	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)
