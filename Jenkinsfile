@@ -13,4 +13,12 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            githubNotify status: 'SUCCESS'
+        }
+        failure {
+            githubNotify status: 'FAILURE'
+        }
+    }
 }
