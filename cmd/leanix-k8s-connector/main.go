@@ -95,6 +95,7 @@ func main() {
 
 	ldif := mapper.LDIF{
 		ConnectorID:        "leanix-k8s-connector",
+		ConnectorType:      "leanix-k8s-connector",
 		ConnectorVersion:   "0.0.1",
 		IntegrationVersion: "3",
 		Description:        "Map kubernetes objects to LeanIX Fact Sheets",
