@@ -113,7 +113,7 @@ func labelSet(nodes *[]corev1.Node) map[string][]string {
 		}
 	}
 	for k, v := range labelsAsSet {
-		labels[k] = v.Items()
+		labels[replacer.Replace(k)] = v.Items()
 	}
 	return labels
 }
