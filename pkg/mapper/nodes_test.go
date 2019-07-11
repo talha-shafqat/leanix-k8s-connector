@@ -78,9 +78,9 @@ func TestAggregateNodes(t *testing.T) {
 	}
 	expectedLabelAggregate := map[string][]string{
 		"name": []string{"nodepool-1", "nodepool-2"},
-		"failure-domain.beta.kubernetes.io/region": []string{"westeurope"},
-		"failure-domain.beta.kubernetes.io/zone":   []string{"1", "2"},
-		"beta.kubernetes.io/instance-type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
+		"failure_domain_beta_kubernetes_io_region": []string{"westeurope"},
+		"failure_domain_beta_kubernetes_io_zone":   []string{"1", "2"},
+		"beta_kubernetes_io_instance_type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
 	}
 
 	nodeAggregate, err := aggregrateNodes(nodes)
