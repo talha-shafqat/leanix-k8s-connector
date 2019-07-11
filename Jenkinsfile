@@ -16,19 +16,6 @@ pipeline {
             }
         }
     }
-    post {
-        success {
-            script {
-                if (env.CHANGE_ID) {
-                    pullRequest.createStatus(status: 'success')
-                }
-            }
-        }
-        failure {
-            script {
-                if (env.CHANGE_ID) {
-                    pullRequest.createStatus(status: 'failure')
-                }
             }
         }
     }
