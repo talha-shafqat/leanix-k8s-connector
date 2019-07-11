@@ -8,10 +8,11 @@ pipeline {
             }
         }
         stage('Build') {
-            if(env.BRANCH_NAME == 'master'){
-                steps {
-                    sh 'make'
-                }
+            when {
+                branch 'master'
+            }
+            steps {
+                sh 'make'
             }
         }
     }
