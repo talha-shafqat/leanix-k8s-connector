@@ -8,8 +8,10 @@ pipeline {
             }
         }
         stage('Build') {
-            steps {
-                echo 'Building...'
+            if(env.BRANCH_NAME == 'master'){
+                steps {
+                    sh 'make'
+                }
             }
         }
     }
