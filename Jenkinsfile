@@ -9,13 +9,12 @@ pipeline {
         }
         stage('Build') {
             when {
-                branch 'master'
+                branch 'develop'
             }
             steps {
                 sh 'make'
-            }
-        }
-    }
+                sh 'make image'
+                sh 'make push'
             }
         }
     }
