@@ -3,6 +3,13 @@ pipeline {
     tools { 
         go '1.12.7' 
     }
+    parameters {
+        string(name: 'version', defaultValue: 'latest')
+    }
+    environment {
+        AZURE_STORAGE_ACCOUNT_NAME = 'mastest534'
+        AZURE_STORAGE_ACCOUNT_KEY = credentials('mas-azure-storage-account-key')
+    }
     stages {
         stage('Test') {
             steps {
@@ -21,6 +28,8 @@ pipeline {
                 sh 'make'
                 sh 'make image'
                 sh 'make push'
+                v = sh (script: 'make version', returnStdout: true).trim()
+                env.version = v
             }
         }
         stage('Deploy to int cluster') {
@@ -32,7 +41,7 @@ pipeline {
                 } 
             }
             steps {
-                echo 'Here we need to run helm command to deploy to the leanix int cluster'
+                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${env.version} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.accountKey=$(AZURE_STORAGE_ACCOUNT_KEY) --set args.azureblob.accountName=$(AZURE_STORAGE_ACCOUNT_NAME) --set args.azureblob.container=connector --set args.connectorID=leanix-int'
             }
         }
         // stage('Release approval'){
