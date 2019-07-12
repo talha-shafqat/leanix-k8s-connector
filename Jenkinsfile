@@ -26,8 +26,7 @@ pipeline {
                 sh 'make image'
                 sh 'make push'
                 script {
-                    v = sh (script: 'make version', returnStdout: true).trim()
-                    env.version = v
+                    version = sh (script: 'make version', returnStdout: true).trim()
                 }
             }
         }
@@ -40,7 +39,7 @@ pipeline {
                 } 
             }
             steps {
-                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${env.version} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.accountKey=$(AZURE_STORAGE_ACCOUNT_KEY) --set args.azureblob.accountName=$(AZURE_STORAGE_ACCOUNT_NAME) --set args.azureblob.container=connector --set args.connectorID=leanix-int'
+                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${version} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.accountKey=$(AZURE_STORAGE_ACCOUNT_KEY) --set args.azureblob.accountName=$(AZURE_STORAGE_ACCOUNT_NAME) --set args.azureblob.container=connector --set args.connectorID=leanix-int'
             }
         }
         // stage('Release approval'){
