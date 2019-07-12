@@ -20,7 +20,6 @@ pipeline {
                 anyOf { 
                     branch 'master'
                     branch 'develop'
-                    branch 'feature/HOOK-426-jenkins-job'
                 } 
             }
             steps {
@@ -38,7 +37,6 @@ pipeline {
                 anyOf { 
                     branch 'master'
                     branch 'develop'
-                    branch 'feature/HOOK-426-jenkins-job'
                 } 
             }
             steps {
