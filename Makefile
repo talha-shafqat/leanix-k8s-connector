@@ -24,6 +24,9 @@ clean:
 build:
 	go build -o bin/$(PROJECT) -ldflags '-X $(go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
 
+version:
+	@echo $(VERSION)
+
 image:
 	docker build -t $(IMAGE) .
 
