@@ -25,8 +25,10 @@ pipeline {
                 sh 'make'
                 sh 'make image'
                 sh 'make push'
-                v = sh (script: 'make version', returnStdout: true).trim()
-                env.version = v
+                script {
+                    v = sh (script: 'make version', returnStdout: true).trim()
+                    env.version = v
+                }
             }
         }
         stage('Deploy to int cluster') {
