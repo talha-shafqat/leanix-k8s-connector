@@ -17,7 +17,6 @@ TEST_CMD=go test ./pkg/...
 
 DOCKER_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
 		-e CGO_ENABLED=0 \
@@ -34,7 +33,6 @@ DOCKER_TEST_CMD=$(DOCKER_CMD) \
 ifdef GOPATH
 DOCKER_BUILD_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
 		-e CGO_ENABLED=0 \
@@ -46,7 +44,6 @@ DOCKER_BUILD_CMD=docker run \
 
 DOCKER_TEST_CMD=docker run \
 		--rm \
-		--name $(PROJECT)-make \
 		-e GOARCH=$(GOARCH) \
 		-e GOOS=$(GOOS) \
 		-e CGO_ENABLED=0 \
