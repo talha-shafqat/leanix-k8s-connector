@@ -2,7 +2,7 @@ GOARCH ?= amd64
 GOOS ?= linux
 GOVERSION ?= 1.12
 PROJECT ?= leanix-k8s-connector
-DOCKER_NAMESPACE ?= leanix.azurecr.io
+DOCKER_NAMESPACE ?= leanix
 
 # This version-strategy uses git tags to set the version string
 VERSION := $(shell git describe --tags --always --dirty)
@@ -63,8 +63,6 @@ all: clean test build
 
 local: clean test-local build-local
 
-acr: clean test-local build build-acr
-
 clean:
 	$(RM) bin/$(PROJECT)
 
@@ -73,9 +71,6 @@ build:
 
 build-local:
 	$(BUILD_CMD)
-
-build-acr:
-	az acr build -t $(IMAGE) -r leanix .
 
 image:
 	docker build -t $(IMAGE) .
