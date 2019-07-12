@@ -3,9 +3,6 @@ pipeline {
     tools { 
         go '1.12.7' 
     }
-    parameters {
-        string(name: 'version', defaultValue: 'latest')
-    }
     environment {
         AZURE_STORAGE_ACCOUNT_NAME = 'mastest534'
         AZURE_STORAGE_ACCOUNT_KEY = credentials('mas-azure-storage-account-key')
