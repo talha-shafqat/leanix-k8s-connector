@@ -10,7 +10,8 @@ pipeline {
             when { 
                 anyOf { 
                     branch 'master'
-                    branch 'develop' 
+                    branch 'develop'
+                    branch 'feature/HOOK-426-jenkins-job'
                 } 
             }
             steps {
@@ -19,11 +20,12 @@ pipeline {
                 sh 'make push'
             }
         }
-        stage('Deploy to Test') {
+        stage('Deploy to int cluster') {
             when { 
                 anyOf { 
                     branch 'master'
-                    branch 'develop' 
+                    branch 'develop'
+                    branch 'feature/HOOK-426-jenkins-job'
                 } 
             }
             steps {
