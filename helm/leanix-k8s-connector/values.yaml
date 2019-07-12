@@ -5,7 +5,7 @@
 rbac: true
 
 image:
-  repository: leanix.azurecr.io/leanix-k8s-connector
+  repository: leanix/leanix-k8s-connector
   tag: latest
   pullPolicy: Always
 
