@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools { 
+        go '1.12.7' 
+    }
     stages {
         stage('Test') {
             steps {
