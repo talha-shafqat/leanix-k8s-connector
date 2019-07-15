@@ -1,7 +1,7 @@
 pipeline {
     agent any
-    tools { 
-        go '1.12.7' 
+    tools {
+        go '1.12.7'
     }
     environment {
         VERSION = """${sh(
@@ -12,15 +12,17 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                sh 'make test'
+                sh 'make'
+                sh 'make image'
+                sh 'docker run leanix/leanix-k8s-connector:${VERSION} --help | grep "pflag: help requested" '
             }
         }
         stage('Build') {
-            when { 
-                anyOf { 
+            when {
+                anyOf {
                     branch 'master'
                     branch 'develop'
-                } 
+                }
             }
             steps {
                 sh 'make'
@@ -33,11 +35,11 @@ pipeline {
                 AZURE_STORAGE_ACCOUNT_NAME = 'mastest534'
                 AZURE_STORAGE_ACCOUNT_KEY = credentials('mas-azure-storage-account-key')
             }
-            when { 
-                anyOf { 
+            when {
+                anyOf {
                     branch 'master'
                     branch 'develop'
-                } 
+                }
             }
             steps {
                 sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${VERSION} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.accountKey=${AZURE_STORAGE_ACCOUNT_KEY} --set args.azureblob.accountName=${AZURE_STORAGE_ACCOUNT_NAME} --set args.azureblob.container=connector --set args.connectorID=leanix-int'
