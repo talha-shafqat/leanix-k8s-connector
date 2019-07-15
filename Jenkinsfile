@@ -14,7 +14,7 @@ pipeline {
             steps {
                 sh 'make'
                 sh 'make image'
-                sh 'docker run leanix/leanix-k8s-connector:${VERSION} --help'
+                sh 'docker run leanix/leanix-k8s-connector:${VERSION} --help | grep "pflag: help requested" '
             }
         }
         stage('Build') {
