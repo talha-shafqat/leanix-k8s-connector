@@ -1,7 +1,3 @@
-GOARCH ?= amd64
-GOOS ?= linux
-GOVERSION ?= 1.12
-
 PROJECT ?= leanix-k8s-connector
 DOCKER_NAMESPACE ?= leanix
 
