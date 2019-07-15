@@ -17,7 +17,7 @@ clean:
 	$(RM) bin/$(PROJECT)
 
 build:
-	CGO_ENABLED=0 go build -o bin/$(PROJECT) -ldflags '-X $(go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
+	CGO_ENABLED=1 go build -o bin/$(PROJECT) -ldflags '-X $(go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
 
 version:
 	@echo $(VERSION)
