@@ -38,9 +38,9 @@ spec:
             - "{{ .Values.args.azureblob.container }}"
             {{- end }}
             - "--connector-id"
-            - "{{ .Values.args.connectorID | default uuidv4}}"
+            - "{{ .Values.args.connectorID | default uuidv4 }}"
             - "--blacklist-namespaces"
-            - "{{ .Values.args.blacklistNamespaces}}"
+            - "{{ .Values.args.blacklistNamespaces | join "," }}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
