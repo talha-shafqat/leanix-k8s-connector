@@ -57,7 +57,7 @@ func (u *AzureBlob) Upload(ldif []byte, log []byte) error {
 	if err != nil {
 		return err
 	}
-	err = u.uploadFile("leanix-k8s-connector.log", log)
+	err = u.uploadFile(LogFileName, log)
 	if err != nil {
 		return err
 	}
