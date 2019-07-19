@@ -18,6 +18,8 @@ args:
     accountKey: ""
     accountName: ""
     container: ""
+  blacklistNamespaces:
+  - "kube-system"
 
 nameOverride: ""
 fullnameOverride: ""
