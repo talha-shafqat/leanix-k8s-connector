@@ -18,7 +18,6 @@ args:
     accountKey: ""
     accountName: ""
     container: ""
-  logFile: /tmp/leanix-k8s-connector.log
 
 nameOverride: ""
 fullnameOverride: ""

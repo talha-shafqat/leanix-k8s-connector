@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -25,18 +24,18 @@ const (
 	azureContainerFlag   string = "azure-container"
 	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
-	logFileFlag          string = "log-file"
 	connectorIDFlag      string = "connector-id"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
+	stdoutLogger, debugLogBuffer := initLogger()
 	err := parseFlags()
 	if err != nil {
-		log.Critical(err)
+		log.Fatal(err)
 	}
-	logBuffer := initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
+	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
 	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
@@ -121,7 +120,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uploader.Upload(ldifByte, logBuffer.Bytes())
+	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
 }
 
 func parseFlags() error {
@@ -132,7 +131,6 @@ func parseFlags() error {
 	flag.String(azureContainerFlag, "", "Azure storage account container")
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
-	flag.String(logFileFlag, "./leanix-k8s-connector.log", "path where the debug log file should be placed")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.Parse()
 	// Let flags overwrite configs in viper
@@ -154,27 +152,25 @@ func parseFlags() error {
 }
 
 // InitLogger initialise the logger for stdout and log file
-func initLogger(logFile string, verbose bool) *bytes.Buffer {
-	format := logging.MustStringFormatter(`%{time:15:04:05.000} ▶ [%{level:.4s}] %{message}`)
+func initLogger() (logging.LeveledBackend, *bytes.Buffer) {
+	format := logging.MustStringFormatter(`%{time} ▶ [%{level:.4s}] %{message}`)
 	logging.SetFormatter(format)
 
 	// stdout logging backend
 	stdout := logging.NewLogBackend(os.Stdout, "", 0)
 	stdoutLeveled := logging.AddModuleLevel(stdout)
-	if verbose {
-		stdoutLeveled.SetLevel(logging.DEBUG, "")
-	} else {
-		stdoutLeveled.SetLevel(logging.INFO, "")
-	}
 
 	// file logging backend
-	f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		log.Warningf("unable to log to '%s': %s\n", logFile, err)
-	}
 	var mem bytes.Buffer
-	multiWriter := io.MultiWriter(f, &mem)
-	fileLogger := logging.NewLogBackend(multiWriter, "", 0)
+	fileLogger := logging.NewLogBackend(&mem, "", 0)
 	logging.SetBackend(fileLogger, stdoutLeveled)
-	return &mem
+	return stdoutLeveled, &mem
+}
+
+func enableVerbose(logger logging.LeveledBackend, verbose bool) {
+	if verbose {
+		logger.SetLevel(logging.DEBUG, "")
+	} else {
+		logger.SetLevel(logging.INFO, "")
+	}
 }
