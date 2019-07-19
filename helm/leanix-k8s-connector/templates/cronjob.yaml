@@ -37,8 +37,6 @@ spec:
             - "--azure-container"
             - "{{ .Values.args.azureblob.container }}"
             {{- end }}
-            - "--log-file"
-            - "{{ .Values.args.logFile }}"
             - "--connector-id"
             - "{{ .Values.args.connectorID | default uuidv4}}"
             resources:

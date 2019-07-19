@@ -24,7 +24,6 @@ const (
 	azureContainerFlag   string = "azure-container"
 	localFilePathFlag    string = "local-file-path"
 	verboseFlag          string = "verbose"
-	logFileFlag          string = "log-file"
 	connectorIDFlag      string = "connector-id"
 )
 
@@ -132,7 +131,6 @@ func parseFlags() error {
 	flag.String(azureContainerFlag, "", "Azure storage account container")
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
-	flag.String(logFileFlag, "./leanix-k8s-connector.log", "path where the debug log file should be placed")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.Parse()
 	// Let flags overwrite configs in viper
