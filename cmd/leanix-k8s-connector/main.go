@@ -17,14 +17,15 @@ import (
 )
 
 const (
-	clusterNameFlag      string = "clustername"
-	storageBackendFlag   string = "storage-backend"
-	azureAccountNameFlag string = "azure-account-name"
-	azureAccountKeyFlag  string = "azure-account-key"
-	azureContainerFlag   string = "azure-container"
-	localFilePathFlag    string = "local-file-path"
-	verboseFlag          string = "verbose"
-	connectorIDFlag      string = "connector-id"
+	clusterNameFlag         string = "clustername"
+	storageBackendFlag      string = "storage-backend"
+	azureAccountNameFlag    string = "azure-account-name"
+	azureAccountKeyFlag     string = "azure-account-key"
+	azureContainerFlag      string = "azure-container"
+	localFilePathFlag       string = "local-file-path"
+	verboseFlag             string = "verbose"
+	connectorIDFlag         string = "connector-id"
+	blacklistNamespacesFlag string = "blacklist-namespaces"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -49,7 +50,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	blacklistedNamespaces := []string{"kube-system"}
+	blacklistedNamespaces := viper.GetStringSlice(blacklistNamespacesFlag)
 	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
 
 	log.Debug("Get deployment list...")
@@ -132,6 +133,7 @@ func parseFlags() error {
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
+	flag.StringArray(blacklistNamespacesFlag, []string{""}, "list of namespaces that are not scanned")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)

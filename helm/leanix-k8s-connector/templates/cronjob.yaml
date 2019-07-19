@@ -39,6 +39,8 @@ spec:
             {{- end }}
             - "--connector-id"
             - "{{ .Values.args.connectorID | default uuidv4}}"
+            - "--blacklist-namespaces"
+            - "{{ .Values.args.blacklistNamespaces}}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
