@@ -34,7 +34,7 @@ var log = logging.MustGetLogger("leanix-k8s-connector")
 func main() {
 	err := parseFlags()
 	if err != nil {
-		log.Critical(err)
+		log.Fatal(err)
 	}
 	logBuffer := initLogger(viper.GetString(logFileFlag), viper.GetBool(verboseFlag))
 	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
@@ -155,7 +155,7 @@ func parseFlags() error {
 
 // InitLogger initialise the logger for stdout and log file
 func initLogger(logFile string, verbose bool) *bytes.Buffer {
-	format := logging.MustStringFormatter(`%{time:15:04:05.000} ▶ [%{level:.4s}] %{message}`)
+	format := logging.MustStringFormatter(`%{time} ▶ [%{level:.4s}] %{message}`)
 	logging.SetFormatter(format)
 
 	// stdout logging backend
