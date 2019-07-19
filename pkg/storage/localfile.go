@@ -34,18 +34,13 @@ func NewLocalFile(path string) (*LocalFile, error) {
 
 // Upload persists the ldif content and the log file content in a local files
 func (u *LocalFile) Upload(ldif []byte, log []byte) error {
-	err := u.uploadFile(path.Join(u.Path, LdifFileName), ldif)
+	err := ioutil.WriteFile(path.Join(u.Path, LdifFileName), ldif, 0644)
 	if err != nil {
 		return err
 	}
-	err = u.uploadFile(path.Join(u.Path, LogFileName), log)
+	err = ioutil.WriteFile(path.Join(u.Path, LogFileName), log, 0644)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func (u *LocalFile) uploadFile(name string, content []byte) error {
-	location := path.Join(u.Path, name)
-	return ioutil.WriteFile(location, content, 0644)
 }
