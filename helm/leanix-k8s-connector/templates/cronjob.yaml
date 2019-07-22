@@ -18,7 +18,6 @@ spec:
           containers:
           - name: connector
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-            command: ["sleep","3600"]
             env:
             - name: CLUSTERNAME
               value: "{{ .Values.args.clustername }}"
