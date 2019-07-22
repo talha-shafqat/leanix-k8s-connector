@@ -18,29 +18,37 @@ spec:
           containers:
           - name: connector
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-            args:
-            - "--clustername"
-            - "{{ .Values.args.clustername }}"
+            command: ["sleep","3600"]
+            env:
+            - name: CLUSTERNAME
+              value: "{{ .Values.args.clustername }}"
             {{- if .Values.args.verbose }}
-            - "--verbose"
+            - name: VERBOSE
+              value: "true"
             {{- end }}
-            - "--storage-backend"
-            - "{{ .Values.args.storageBackend }}"
+            - name: STORAGE_BACKEND
+              value: "{{ .Values.args.storageBackend }}"
             {{- if eq .Values.args.storageBackend "file" }}
-            - "--local-file-path"
-            - "{{ .Values.args.localFilePath }}"
+            - name: LOCAL_FILE_PATH
+              value: "{{ .Values.args.localFilePath }}"
             {{- else if eq .Values.args.storageBackend "azureblob" }}
-            - "--azure-account-key"
-            - "{{ .Values.args.azureblob.accountKey }}"
-            - "--azure-account-name"
-            - "{{ .Values.args.azureblob.accountName }}"
-            - "--azure-container"
-            - "{{ .Values.args.azureblob.container }}"
+            - name: AZURE_ACCOUNT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.args.azureblob.secretName }}"
+                  key: azurestorageaccountname
+            - name: AZURE_ACCOUNT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.args.azureblob.secretName }}"
+                  key: azurestorageaccountkey
+            - name: AZURE_CONTAINER
+              value: "{{ .Values.args.azureblob.container }}"
             {{- end }}
-            - "--connector-id"
-            - "{{ .Values.args.connectorID | default uuidv4 }}"
-            - "--blacklist-namespaces"
-            - "{{ .Values.args.blacklistNamespaces | join "," }}"
+            - name: CONNECTOR_ID
+              value: "{{ .Values.args.connectorID | default uuidv4 }}"
+            - name: BLACKLIST_NAMESPACES
+              value: "{{ .Values.args.blacklistNamespaces | join ", " }}"
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
