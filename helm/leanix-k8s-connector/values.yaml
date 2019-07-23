@@ -13,7 +13,9 @@ args:
   clustername: kubernetes
   verbose: false
   storageBackend: file
-  localFilePath: "."
+  file:
+    localFilePath: "/mnt/leanix-k8s-connector"
+    claimName: ""
   azureblob:
     secretName: ""
     container: ""

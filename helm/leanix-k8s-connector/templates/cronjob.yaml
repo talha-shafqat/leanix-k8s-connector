@@ -29,7 +29,7 @@ spec:
               value: "{{ .Values.args.storageBackend }}"
             {{- if eq .Values.args.storageBackend "file" }}
             - name: LOCAL_FILE_PATH
-              value: "{{ .Values.args.localFilePath }}"
+              value: "{{ .Values.args.file.localFilePath }}"
             {{- else if eq .Values.args.storageBackend "azureblob" }}
             - name: AZURE_ACCOUNT_NAME
               valueFrom:
@@ -55,4 +55,13 @@ spec:
               limits:
                 cpu: {{ .Values.resources.limits.cpu }}
                 memory: {{ .Values.resources.limits.memory }}
+          {{- if eq .Values.args.storageBackend "file" }}
+            volumeMounts:
+            - mountPath: "{{ .Values.args.file.localFilePath }}"
+              name: volume
+          volumes:
+            - name: volume
+              persistentVolumeClaim:
+                claimName: "{{ .Values.args.file.claimName }}"
+          {{- end }}
           restartPolicy: OnFailure
