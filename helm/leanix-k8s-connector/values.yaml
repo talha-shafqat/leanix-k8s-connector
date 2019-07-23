@@ -15,8 +15,7 @@ args:
   storageBackend: file
   localFilePath: "."
   azureblob:
-    accountKey: ""
-    accountName: ""
+    secretName: ""
     container: ""
   blacklistNamespaces:
   - "kube-system"
