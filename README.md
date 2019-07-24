@@ -10,7 +10,6 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
   - [Installation Helm chart](#Installation---Helm-chart)
     - [file storage backend](#file-storage-backend)
     - [azureblob storage backend](#azureblob-storage-backend)
-  - [Installation - CLI](#Installation---CLI)
 - [Known issues](#Known-issues)
 - [Version history](#Version-history)
 - [Roadmap](#Roadmap)
@@ -21,9 +20,7 @@ The LeanIX Kubernetes Connector runs in the Kubernetes cluster as a container it
 
 ## Getting started
 
-Depending on how you would like to run the LeanIX Kubernetes Connector the installation steps differ. You can run the connector as a container in the Kubernetes cluster itself or executing the connector as CLI command directly on the Kubernetes nodes.
-
-We recommend deploying and running the connector as a container in the Kubernetes cluster.
+Depending on how you would like to run the LeanIX Kubernetes Connector the installation steps differ a bit and depends on the selected storage backend.
 
 ### Architecture
 
@@ -238,10 +235,6 @@ args:
 ...
 ```
 
-### Installation - CLI
-
-tbd
-
 ## Known issues
 
 When the LeanIX Kubernetes Connector pod resides in an `Error` or `CrashLoopBackOff` state and you issued a `helm upgrade --install` command to fix it, you still the see the same pod instead of a new one.
@@ -264,7 +257,3 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 |Connector version  |Integration version  |Helm chart version  |
 |:-----------------:|:-------------------:|:------------------:|
 |0.0.1              |3                    |0.0.1               |
-
-## Roadmap
-
-- [ ] Collect information from DaemonSets
