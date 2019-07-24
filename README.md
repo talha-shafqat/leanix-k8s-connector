@@ -57,7 +57,7 @@ On the server-side the Helm server component Tiller must be deployed into the Ku
 
 Run `git clone https://github.com/leanix/leanix-k8s-connector.git` to clone the leanix-k8s-connector repository to your local workstation and change the directory.
 
-#### `file` storage backend
+#### file storage backend
 The first step to get started with the `file` storage backend type is to create the PersistentVolume and PersistentVolumeClaim in advance.
 
 In the following example the creation of a PV and PVC to connect to Azure Files is shown.
@@ -167,7 +167,7 @@ args:
 ...
 ```
 
-#### `azureblob` storage backend
+#### azureblob storage backend
 tbd
 
 ### Installation - CLI
