@@ -1,5 +1,16 @@
 # LeanIX Kubernetes Connector
 The LeanIX Kubernetes Connector collects information from Kubernetes.
+## Table of contents
+- [Overview](#Overview)
+- [Getting started](#Getting-started)
+  - [Architecture](#Architecture)
+  - [Installation Helm chart](#Installation---Helm-chart)
+    - [file storage backend](#file-storage-backend)
+    - [azureblob storage backend](#azureblob-storage-backend)
+  - [Installation - CLI](#Installation---CLI)
+- [Known issues](#Known-issues)
+- [Version history](#Version-history)
+- [Roadmap](#Roadmap)
 
 ## Overview
 The LeanIX Kubernetes Connector runs in the Kubernetes cluster as a container itself and collects information from the cluster, nodes, deployments, statefulsets and pods. Those informations are sanitized and brought into the LDIF (LeanIX Data Interchange Format) format that LeanIX understands. The output then is stored in the `kubernetes.ldif` file that gets imported into LeanIX.
