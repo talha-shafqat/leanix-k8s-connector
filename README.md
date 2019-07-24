@@ -134,7 +134,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------|
 |clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                          |
 |connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.  |
-|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container                             |
+|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.
 |storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
 |localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
 |claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
