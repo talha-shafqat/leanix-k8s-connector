@@ -36,7 +36,7 @@ Only necessary permissions are given to the connector as listed below and limite
 
 The CronJob is configured to run every minute and spins up a new pod of the LeanIX Kubernetes Connector. As mentioned in the overview the connector creates the `kubernetes.ldif` file and logs into the `leanix-k8s-connector.log` file.
 
-Currently two storage backend types are natively supported by the connector.
+Currently, two storage backend types are natively supported by the connector.
 
 - file
 - azureblob
