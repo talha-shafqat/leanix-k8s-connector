@@ -12,7 +12,6 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
     - [azureblob storage backend](#azureblob-storage-backend)
 - [Known issues](#Known-issues)
 - [Version history](#Version-history)
-- [Roadmap](#Roadmap)
 
 ## Overview
 
