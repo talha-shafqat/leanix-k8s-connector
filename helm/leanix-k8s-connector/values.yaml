@@ -11,6 +11,7 @@ image:
 
 args:
   clustername: kubernetes
+  connectorID: ""
   verbose: false
   storageBackend: file
   file:
