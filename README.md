@@ -195,7 +195,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------------|
 |clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                                |
 |connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.        |
-|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container                                   |
+|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.                                   |
 |storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
 |secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
 |container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
