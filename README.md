@@ -51,7 +51,11 @@ Before you can install the LeanIX Kubernetes Connector make sure that the follow
 - [helm client is installed](https://helm.sh/docs/using_helm/#installing-the-helm-client)
 - [git is installed](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-Run `git clone https://github.com/leanix/leanix-k8s-connector.git` to clone the leanix-k8s-connector repository to your local workstation.
+On the server-side the Helm server component Tiller must be deployed into the Kubernetes cluster.
+
+- [Installing Tiller](https://helm.sh/docs/using_helm/#installing-tiller)
+
+Run `git clone https://github.com/leanix/leanix-k8s-connector.git` to clone the leanix-k8s-connector repository to your local workstation and change the directory.
 
 #### `file` storage backend
 The first step to get started with the `file` storage backend type is to create the PersistentVolume and PersistentVolumeClaim in advance.
