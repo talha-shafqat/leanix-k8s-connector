@@ -199,7 +199,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
 |secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
 |container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
 
 ``` bash
 helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
