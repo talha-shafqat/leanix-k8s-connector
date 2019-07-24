@@ -233,7 +233,20 @@ args:
 tbd
 
 ## Known issues
-tbd
+When the LeanIX Kubernetes Connector pod resides in an `Error` or `CrashLoopBackOff` state and you issued a `helm upgrade --install` command to fix it, you still the see the same pod instead of a new one.
+
+This is not an issue of the LeanIX Kubernetes Connector itself. Instead it takes several minutes in this case until the `CronJob` creates a new pod.
+
+If you do not want to wait until Kubernetes fix it itself, you can just delete the `Job` object.
+
+Run `kubectl get jobs.batch` and look for the `Job` object with COMPLETIONS 0/1.
+
+```
+NAME                              COMPLETIONS   DURATION   AGE
+leanix-k8s-connector-1563961200   0/1           20m        20m
+```
+Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should see a new pod coming up afterwards.
+
 
 ## Version history
 
