@@ -179,7 +179,7 @@ The first step to get started with the `azureblob` storage backend type is to cr
 1. [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-quickstart-create-account?tabs=azure-portal)
 2. [Create a container](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#create-a-container)
 
-Next, create a Kubernetes secret with the Azure Storage account name and the Azure Storage account key. The information about the name and the key can be retrieved directly via the Azure portal.
+Next, create a Kubernetes secret which contains the Azure Storage account name and the Azure Storage account key. The information about the name and the key can be retrieved directly via the Azure portal.
 
 - [Access keys](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#access-keys)
 
