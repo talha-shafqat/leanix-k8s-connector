@@ -121,21 +121,23 @@ Finally we use the Helm chart deploying the LeanIX Kubernetes Connector to the K
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
-|Parameter          |Default value|Provided value      |Notes                                                                                        |
-|-------------------|-------------|--------------------|---------------------------------------------------------------------------------------------|
-|clustername        |kubernetes   |aks-cluster         |The name of the Kubernetes cluster.                                                          |
-|claimName          |""           |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|connectorID        |Random UUID  |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.  |
-|blacklistNameSpaces|kube-system  |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
-|verbose            |false        |true                |Enables verbose logging on the stdout interface of the container                             |
+|Parameter          |Default value            |Provided value      |Notes                                                                                        |
+|-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------|
+|clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                          |
+|connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.  |
+|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container                             |
+|storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
+|localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
+|claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
 
 ```Bash
 helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
---set args.file.claimName=azurefile \
 --set args.connectorID=aks-cluster \
---set args.blacklistNamespaces="{kube-system,default}" \
---set args.verbose=true
+--set args.verbose=true \
+--set args.file.claimName=azurefile \
+--set args.blacklistNamespaces="{kube-system,default}"
 ```
 
 Beside the option to override the default values and provide values via the `--set` option of the `helm` command, you can also edit the `values.yaml` file.
