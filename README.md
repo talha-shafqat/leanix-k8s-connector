@@ -138,7 +138,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
 |localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
 |claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
 
 ``` bash
 helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
