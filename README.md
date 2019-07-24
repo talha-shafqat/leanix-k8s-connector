@@ -168,7 +168,66 @@ args:
 ```
 
 #### azureblob storage backend
-tbd
+The first step to get started with the `azureblob` storage backend type is to create an Azure Storage account and a container as described in the Azure documentation. In our example we used _leanixk8sconnector_ as container name.
+
+1. [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-quickstart-create-account?tabs=azure-portal)
+2. [Create a container](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#create-a-container)
+
+Next, create a Kubernetes secret with the Azure Storage account name and the Azure Storage account key. The information about the name and the key can be retrieved directly via the Azure portal.
+
+- [Access keys](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#access-keys)
+
+```Bash
+kubectl create secret generic azure-secret --from-literal=azurestorageaccountname={STORAGE_ACCOUNT_NAME} --from-literal=azurestorageaccountkey={STORAGE_KEY}
+```
+
+Finally we use the Helm chart deploying the LeanIX Kubernetes Connector to the Kubernetes cluster.
+
+The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
+
+|Parameter          |Default value            |Provided value      |Notes                                                                                              |
+|-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------------|
+|clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                                |
+|connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.        |
+|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container                                   |
+|storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
+|secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
+|container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
+
+```Bash
+helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
+--set args.clustername=aks-cluster \
+--set args.connectorID=aks-cluster \
+--set args.verbose=true \
+--set args.storageBackend=azureblob \
+--set args.azureblob.secretName=azure-secret \
+--set args.azureblob.container=leanixk8sconnector
+--set args.blacklistNamespaces="{kube-system,default}"
+```
+
+Beside the option to override the default values and provide values via the `--set` option of the `helm` command, you can also edit the `values.yaml` file.
+
+```YAML
+...
+
+args:
+  clustername: aks-cluster
+  connectorID: aks-cluster
+  verbose: true
+  storageBackend: azureblob
+  file:
+    localFilePath: "/mnt/leanix-k8s-connector"
+    claimName: ""
+  azureblob:
+    secretName: "azure-secret"
+    container: "leanixk8sconnector"
+  blacklistNamespaces:
+  - "kube-system"
+  - "default"
+
+...
+```
 
 ### Installation - CLI
 tbd
