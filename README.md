@@ -1,6 +1,9 @@
 # LeanIX Kubernetes Connector
+
 The LeanIX Kubernetes Connector collects information from Kubernetes.
+
 ## Table of contents
+
 - [Overview](#Overview)
 - [Getting started](#Getting-started)
   - [Architecture](#Architecture)
@@ -13,14 +16,17 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
 - [Roadmap](#Roadmap)
 
 ## Overview
+
 The LeanIX Kubernetes Connector runs in the Kubernetes cluster as a container itself and collects information from the cluster, nodes, deployments, statefulsets and pods. Those informations are sanitized and brought into the LDIF (LeanIX Data Interchange Format) format that LeanIX understands. The output then is stored in the `kubernetes.ldif` file that gets imported into LeanIX.
 
 ## Getting started
+
 Depending on how you would like to run the LeanIX Kubernetes Connector the installation steps differ. You can run the connector as a container in the Kubernetes cluster itself or executing the connector as CLI command directly on the Kubernetes nodes.
 
 We recommend deploying and running the connector as a container in the Kubernetes cluster.
 
 ### Architecture
+
 The LeanIX Kubernetes Connector gets deployed via a Helm chart into the Kubernetes cluster as a CronJob. All necessary requirements like the ServiceAccount, the ClusterRole and ClusterRoleBinding are deployed also by the Helm chart.
 
 Only necessary permissions are given to the connector as listed below and limited to get, list and watch operations.
@@ -45,6 +51,7 @@ The `file` storage backend lets you use every storage that can be provided to Ku
 The `azureblob` storage backend leverages an Azure Storage account you must provide to store the `.ldif` and `.log` files.
 
 ### Installation - Helm chart
+
 Before you can install the LeanIX Kubernetes Connector make sure that the following pre-requisites are fulfilled on your local workstation.
 
 - [kubectl is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
@@ -58,6 +65,7 @@ On the server-side the Helm server component Tiller must be deployed into the Ku
 Run `git clone https://github.com/leanix/leanix-k8s-connector.git` to clone the leanix-k8s-connector repository to your local workstation and change the directory.
 
 #### file storage backend
+
 The first step to get started with the `file` storage backend type is to create the PersistentVolume and PersistentVolumeClaim in advance.
 
 In the following example the creation of a PV and PVC to connect to Azure Files is shown.
@@ -71,13 +79,13 @@ Next, create a Kubernetes secret with the Azure Storage account name and the Azu
 
 - [Access keys](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#access-keys)
 
-```Bash
+``` bash
 kubectl create secret generic azure-secret --from-literal=azurestorageaccountname={STORAGE_ACCOUNT_NAME} --from-literal=azurestorageaccountkey={STORAGE_KEY}
 ```
 
 Afterwards create the PV and PVC using the template below running the `kubectl apply -f template.yaml` command.
 
-```YAML
+``` yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -114,7 +122,7 @@ spec:
 
 Run `kubectl get pv && kubectl get pvc` and check your output. It should look like this.
 
-```
+``` bash
 NAME        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM               STORAGECLASS   REASON   AGE
 azurefile   1Gi        RWX            Retain           Bound    default/azurefile                           45s
 NAME        STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -135,7 +143,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
 |blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
 
-```Bash
+``` bash
 helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
@@ -146,7 +154,7 @@ helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
 
 Beside the option to override the default values and provide values via the `--set` option of the `helm` command, you can also edit the `values.yaml` file.
 
-```YAML
+``` yaml
 ...
 
 args:
@@ -168,6 +176,7 @@ args:
 ```
 
 #### azureblob storage backend
+
 The first step to get started with the `azureblob` storage backend type is to create an Azure Storage account and a container as described in the Azure documentation. In our example we used _leanixk8sconnector_ as container name.
 
 1. [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-quickstart-create-account?tabs=azure-portal)
@@ -177,7 +186,7 @@ Next, create a Kubernetes secret with the Azure Storage account name and the Azu
 
 - [Access keys](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-manage#access-keys)
 
-```Bash
+``` bash
 kubectl create secret generic azure-secret --from-literal=azurestorageaccountname={STORAGE_ACCOUNT_NAME} --from-literal=azurestorageaccountkey={STORAGE_KEY}
 ```
 
@@ -195,7 +204,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
 |blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option|
 
-```Bash
+``` bash
 helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
@@ -208,7 +217,7 @@ helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
 
 Beside the option to override the default values and provide values via the `--set` option of the `helm` command, you can also edit the `values.yaml` file.
 
-```YAML
+``` yaml
 ...
 
 args:
@@ -230,9 +239,11 @@ args:
 ```
 
 ### Installation - CLI
+
 tbd
 
 ## Known issues
+
 When the LeanIX Kubernetes Connector pod resides in an `Error` or `CrashLoopBackOff` state and you issued a `helm upgrade --install` command to fix it, you still the see the same pod instead of a new one.
 
 This is not an issue of the LeanIX Kubernetes Connector itself. Instead it takes several minutes in this case until the `CronJob` creates a new pod.
@@ -241,12 +252,12 @@ If you do not want to wait until Kubernetes fix it itself, you can just delete t
 
 Run `kubectl get jobs.batch` and look for the `Job` object with COMPLETIONS 0/1.
 
-```
+``` bash
 NAME                              COMPLETIONS   DURATION   AGE
 leanix-k8s-connector-1563961200   0/1           20m        20m
 ```
-Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should see a new pod coming up afterwards.
 
+Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should see a new pod coming up afterwards.
 
 ## Version history
 
@@ -255,4 +266,5 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 |0.0.1              |3                    |0.0.1               |
 
 ## Roadmap
+
 - [ ] Collect information from DaemonSets
