@@ -72,17 +72,17 @@ helm repo list
 The output of the `helm repo list` command should look like this.
 
 ``` bash
-NAME                 	URL
-stable               	https://kubernetes-charts.storage.googleapis.com
-local                	http://127.0.0.1:8879/charts
-leanix               	https://raw.githubusercontent.com/leanix/leanix-k8s-connector/master/helm/
+NAME                  URL
+stable                https://kubernetes-charts.storage.googleapis.com
+local                 http://127.0.0.1:8879/charts
+leanix                https://raw.githubusercontent.com/leanix/leanix-k8s-connector/master/helm/
 ```
 
 A list of the available LeanIX Kubernetes connector Helm chart versions can be retrieved with the command `helm search leanix` or `helm search leanix-k8s-connector`.
 
 ``` bash
-NAME                                      	CHART VERSION	APP VERSION	DESCRIPTION
-leanix/leanix-k8s-connector               	0.0.1        	0.0.1      	Retrieves information from Kubernetes cluster
+NAME                                        CHART VERSION APP VERSION DESCRIPTION
+leanix/leanix-k8s-connector                 0.0.1         0.0.1       Retrieves information from Kubernetes cluster
 ```
 
 #### file storage backend
