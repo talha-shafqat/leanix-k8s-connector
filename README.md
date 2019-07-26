@@ -8,6 +8,7 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
 - [Getting started](#Getting-started)
   - [Architecture](#Architecture)
   - [Installation Helm chart](#Installation---Helm-chart)
+    - [Add LeanIX Kubernetes Connector Helm chart repository](#Add-LeanIX-Kubernetes-Connector-Helm-chart-repository)
     - [file storage backend](#file-storage-backend)
     - [azureblob storage backend](#azureblob-storage-backend)
 - [Known issues](#Known-issues)
@@ -58,7 +59,31 @@ On the server-side the Helm server component Tiller must be deployed into the Ku
 
 - [Installing Tiller](https://helm.sh/docs/using_helm/#installing-tiller)
 
-Run `git clone https://github.com/leanix/leanix-k8s-connector.git` to clone the leanix-k8s-connector repository to your local workstation and change the directory.
+#### Add LeanIX Kubernetes Connector Helm chart repository
+
+Before you can install the LeanIX Kubernetes Connector via the provided Helm chart you must add the Helm chart repository first.
+
+``` bash
+helm repo add leanix 'https://raw.githubusercontent.com/leanix/leanix-k8s-connector/master/helm/'
+helm repo update
+helm repo list
+```
+
+The output of the `helm repo list` command should look like this.
+
+``` bash
+NAME                 	URL
+stable               	https://kubernetes-charts.storage.googleapis.com
+local                	http://127.0.0.1:8879/charts
+leanix               	https://raw.githubusercontent.com/leanix/leanix-k8s-connector/master/helm/
+```
+
+A list of the available LeanIX Kubernetes connector Helm chart versions can be retrieved with the command `helm search leanix` or `helm search leanix-k8s-connector`.
+
+``` bash
+NAME                                      	CHART VERSION	APP VERSION	DESCRIPTION
+leanix/leanix-k8s-connector               	0.0.1        	0.0.1      	Retrieves information from Kubernetes cluster
+```
 
 #### file storage backend
 
@@ -140,7 +165,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
 
 ``` bash
-helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
+helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
 --set args.verbose=true \
@@ -201,7 +226,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
 
 ``` bash
-helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector \
+helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
 --set args.verbose=true \
