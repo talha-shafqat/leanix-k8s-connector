@@ -150,7 +150,7 @@ NAME        STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 azurefile   Bound    azurefile   1Gi        RWX                           45s
 ```
 
-Finally we use the Helm chart deploying the LeanIX Kubernetes Connector to the Kubernetes cluster.
+Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the Kubernetes cluster.
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
@@ -214,7 +214,7 @@ Next, create a Kubernetes secret which contains the Azure Storage account name a
 kubectl create secret generic azure-secret --from-literal=azurestorageaccountname={STORAGE_ACCOUNT_NAME} --from-literal=azurestorageaccountkey={STORAGE_KEY}
 ```
 
-Finally we use the Helm chart deploying the LeanIX Kubernetes Connector to the Kubernetes cluster.
+Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the Kubernetes cluster.
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
