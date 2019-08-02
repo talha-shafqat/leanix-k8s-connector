@@ -97,7 +97,7 @@ func main() {
 		ConnectorID:      viper.GetString(connectorIDFlag),
 		ConnectorType:    "leanix-k8s-connector",
 		ConnectorVersion: "1.0.0",
-		LxVersion:        "3",
+		LxVersion:        "1.0.0",
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
 		Content:          kubernetesObjects,
 	}
