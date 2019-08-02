@@ -21,6 +21,8 @@ spec:
             env:
             - name: CLUSTERNAME
               value: "{{ .Values.args.clustername }}"
+            - name: LX_WORKSPACE
+              value: "{{ .Values.args.lxWorkspace }}"
             {{- if .Values.args.verbose }}
             - name: VERBOSE
               value: "true"

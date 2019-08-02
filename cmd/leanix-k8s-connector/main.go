@@ -26,6 +26,7 @@ const (
 	verboseFlag             string = "verbose"
 	connectorIDFlag         string = "connector-id"
 	blacklistNamespacesFlag string = "blacklist-namespaces"
+	lxWorkspaceFlag         string = "lx-workspace"
 )
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -94,12 +95,13 @@ func main() {
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	ldif := mapper.LDIF{
-		ConnectorID:        viper.GetString(connectorIDFlag),
-		ConnectorType:      "leanix-k8s-connector",
-		ConnectorVersion:   "0.0.1",
-		IntegrationVersion: "3",
-		Description:        "Map Kubernetes objects to LeanIX Fact Sheets",
-		Content:            kubernetesObjects,
+		ConnectorID:      viper.GetString(connectorIDFlag),
+		ConnectorType:    "leanix-k8s-connector",
+		ConnectorVersion: "1.0.0",
+		LxVersion:        "1.0.0",
+		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
+		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
+		Content:          kubernetesObjects,
 	}
 
 	log.Debug("Marshal ldif")
@@ -134,6 +136,7 @@ func parseFlags() error {
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.StringSlice(blacklistNamespacesFlag, []string{""}, "list of namespaces that are not scanned")
+	flag.String(lxWorkspaceFlag, "", "name of the LeanIX workspace the data is sent to")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)
@@ -149,6 +152,9 @@ func parseFlags() error {
 	}
 	if viper.GetString(connectorIDFlag) == "" {
 		return fmt.Errorf("%s flag must be set", connectorIDFlag)
+	}
+	if viper.GetString(lxWorkspaceFlag) == "" {
+		return fmt.Errorf("%s flag must be set", lxWorkspaceFlag)
 	}
 	return nil
 }

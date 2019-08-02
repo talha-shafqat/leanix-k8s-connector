@@ -12,6 +12,7 @@ image:
 args:
   clustername: kubernetes
   connectorID: ""
+  lxWorkspace: ""
   verbose: false
   storageBackend: file
   file:
