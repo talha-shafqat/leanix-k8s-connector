@@ -94,12 +94,12 @@ func main() {
 	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	ldif := mapper.LDIF{
-		ConnectorID:        viper.GetString(connectorIDFlag),
-		ConnectorType:      "leanix-k8s-connector",
-		ConnectorVersion:   "1.0.0",
-		IntegrationVersion: "3",
-		Description:        "Map Kubernetes objects to LeanIX Fact Sheets",
-		Content:            kubernetesObjects,
+		ConnectorID:      viper.GetString(connectorIDFlag),
+		ConnectorType:    "leanix-k8s-connector",
+		ConnectorVersion: "1.0.0",
+		LxVersion:        "3",
+		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
+		Content:          kubernetesObjects,
 	}
 
 	log.Debug("Marshal ldif")
