@@ -82,7 +82,7 @@ A list of the available LeanIX Kubernetes connector Helm chart versions can be r
 
 ``` bash
 NAME                                        CHART VERSION APP VERSION DESCRIPTION
-leanix/leanix-k8s-connector                 0.0.1         0.0.1       Retrieves information from Kubernetes cluster
+leanix/leanix-k8s-connector                 1.0.0         1.0.0       Retrieves information from Kubernetes cluster
 ```
 
 #### file storage backend
@@ -158,6 +158,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------|
 |clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                          |
 |connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.  |
+|lxWorkspace        |""                       |leanix              |The name of the LeanIX workspace the data is sent to. Must be provided.                      |
 |verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.
 |storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
 |localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
@@ -168,6 +169,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
+--set args.lxWorkspace=leanix \
 --set args.verbose=true \
 --set args.file.claimName=azurefile \
 --set args.blacklistNamespaces="{kube-system,default}"
@@ -181,6 +183,7 @@ Beside the option to override the default values and provide values via the `--s
 args:
   clustername: aks-cluster
   connectorID: aks-cluster
+  lxWorkspace: leanix
   verbose: true
   storageBackend: file
   file:
@@ -219,7 +222,8 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------------|
 |clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                                |
 |connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.        |
-|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.                                   |
+|lxWorkspace        |""                       |leanix              |The name of the LeanIX workspace the data is sent to. Must be provided.                            |
+|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.                                  |
 |storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
 |secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
 |container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
@@ -229,6 +233,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
+--set args.lxWorkspace=leanix \
 --set args.verbose=true \
 --set args.storageBackend=azureblob \
 --set args.azureblob.secretName=azure-secret \
@@ -244,6 +249,7 @@ Beside the option to override the default values and provide values via the `--s
 args:
   clustername: aks-cluster
   connectorID: aks-cluster
+  lxWorkspace: leanix
   verbose: true
   storageBackend: azureblob
   file:
@@ -280,4 +286,4 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 |Connector version  |Integration version  |Helm chart version  |
 |:-----------------:|:-------------------:|:------------------:|
-|0.0.1              |3                    |0.0.1               |
+|1.0.0              |1.0.0                |1.0.0               |
