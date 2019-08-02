@@ -13,6 +13,7 @@ type LDIF struct {
 	ConnectorType    string             `json:"connectorType,omitempty"`
 	ConnectorVersion string             `json:"connectorVersion,omitempty"`
 	LxVersion        string             `json:"lxVersion,omitempty"`
+	LxWorkspace      string             `json:"lxWorkspace,omitempty"`
 	Description      string             `json:"description,omitempty"`
 	Content          []KubernetesObject `json:"content,omitempty"`
 }
