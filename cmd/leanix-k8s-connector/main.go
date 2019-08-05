@@ -29,6 +29,9 @@ const (
 	lxWorkspaceFlag         string = "lx-workspace"
 )
 
+const connectorVersion string = "1.0.0"
+const lxVersion string = "1.0.0"
+
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
@@ -38,6 +41,9 @@ func main() {
 		log.Fatal(err)
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
+	log.Debugf("LeanIX connector version: %s", connectorVersion)
+	log.Debugf("LeanIX integration version: %s", lxVersion)
+	log.Debugf("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
 	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
@@ -97,8 +103,8 @@ func main() {
 	ldif := mapper.LDIF{
 		ConnectorID:      viper.GetString(connectorIDFlag),
 		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: "1.0.0",
-		LxVersion:        "1.0.0",
+		ConnectorVersion: connectorVersion,
+		LxVersion:        lxVersion,
 		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
 		Content:          kubernetesObjects,
