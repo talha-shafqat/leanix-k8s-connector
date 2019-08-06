@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
-	log.Infof("----------Start----------")
+	log.Info("----------Start----------")
 	log.Infof("LeanIX connector version: %s", connectorVersion)
 	log.Infof("LeanIX integration version: %s", lxVersion)
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
@@ -117,8 +117,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debugf("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
-	log.Infof("-----------End-----------")
+	log.Infof("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
+	log.Info("-----------End-----------")
 	azureOpts := storage.AzureBlobOpts{
 		AccountName: viper.GetString(azureAccountNameFlag),
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
