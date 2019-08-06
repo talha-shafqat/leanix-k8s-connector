@@ -41,6 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
+	log.Infof("----------Start----------")
 	log.Infof("LeanIX connector version: %s", connectorVersion)
 	log.Infof("LeanIX integration version: %s", lxVersion)
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
@@ -130,6 +131,8 @@ func main() {
 		log.Fatal(err)
 	}
 	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+
+	log.Infof("-----------End-----------")
 }
 
 func parseFlags() error {
