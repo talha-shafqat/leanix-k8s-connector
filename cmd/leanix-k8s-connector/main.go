@@ -118,6 +118,7 @@ func main() {
 	}
 
 	log.Debugf("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
+	log.Infof("-----------End-----------")
 	azureOpts := storage.AzureBlobOpts{
 		AccountName: viper.GetString(azureAccountNameFlag),
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
@@ -131,8 +132,6 @@ func main() {
 		log.Fatal(err)
 	}
 	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
-
-	log.Infof("-----------End-----------")
 }
 
 func parseFlags() error {
