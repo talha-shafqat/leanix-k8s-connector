@@ -41,10 +41,10 @@ func main() {
 		log.Fatal(err)
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
-	log.Debugf("LeanIX connector version: %s", connectorVersion)
-	log.Debugf("LeanIX integration version: %s", lxVersion)
-	log.Debugf("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
-	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
+	log.Infof("LeanIX connector version: %s", connectorVersion)
+	log.Infof("LeanIX integration version: %s", lxVersion)
+	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
+	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
 	config, err := restclient.InClusterConfig()
@@ -58,7 +58,7 @@ func main() {
 		log.Fatal(err)
 	}
 	blacklistedNamespaces := viper.GetStringSlice(blacklistNamespacesFlag)
-	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
+	log.Infof("Namespace blacklist: %v", blacklistedNamespaces)
 
 	log.Debug("Get deployment list...")
 	deployments, deploymentNodes, err := kubernetes.DeploymentsOnNodes(blacklistedNamespaces)
