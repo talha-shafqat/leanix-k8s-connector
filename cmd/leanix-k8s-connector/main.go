@@ -29,6 +29,9 @@ const (
 	lxWorkspaceFlag         string = "lx-workspace"
 )
 
+const connectorVersion string = "1.0.0"
+const lxVersion string = "1.0.0"
+
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
 func main() {
@@ -38,7 +41,11 @@ func main() {
 		log.Fatal(err)
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
-	log.Debugf("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
+	log.Info("----------Start----------")
+	log.Infof("LeanIX connector version: %s", connectorVersion)
+	log.Infof("LeanIX integration version: %s", lxVersion)
+	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
+	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
 	// use the current context in kubeconfig
 	config, err := restclient.InClusterConfig()
@@ -52,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 	blacklistedNamespaces := viper.GetStringSlice(blacklistNamespacesFlag)
-	log.Debugf("Namespace blacklist: %v", blacklistedNamespaces)
+	log.Infof("Namespace blacklist: %v", blacklistedNamespaces)
 
 	log.Debug("Get deployment list...")
 	deployments, deploymentNodes, err := kubernetes.DeploymentsOnNodes(blacklistedNamespaces)
@@ -97,8 +104,8 @@ func main() {
 	ldif := mapper.LDIF{
 		ConnectorID:      viper.GetString(connectorIDFlag),
 		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: "1.0.0",
-		LxVersion:        "1.0.0",
+		ConnectorVersion: connectorVersion,
+		LxVersion:        lxVersion,
 		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
 		Content:          kubernetesObjects,
@@ -110,7 +117,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debugf("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
+	log.Infof("Upload %s to %s", storage.LdifFileName, viper.GetString("storage-backend"))
 	azureOpts := storage.AzureBlobOpts{
 		AccountName: viper.GetString(azureAccountNameFlag),
 		AccountKey:  viper.GetString(azureAccountKeyFlag),
@@ -123,6 +130,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Info("-----------End-----------")
 	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
 }
 
