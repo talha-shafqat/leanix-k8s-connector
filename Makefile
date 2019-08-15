@@ -8,6 +8,7 @@ VERSION := $(shell git describe --tags --always --dirty)
 #VERSION := 1.2.3
 
 IMAGE := $(DOCKER_NAMESPACE)/$(PROJECT):$(VERSION)
+LATEST := $(DOCKER_NAMESPACE)/$(PROJECT):latest
 
 .PHONY: all
 
@@ -23,10 +24,10 @@ version:
 	@echo $(VERSION)
 
 image:
-	docker build -t $(IMAGE) .
+	docker build -t $(IMAGE) $(LATEST) .
 
 push:
-	docker push $(IMAGE)
+	docker push $(IMAGE) $(LATEST)
 
 test:
 	go test ./pkg/...
