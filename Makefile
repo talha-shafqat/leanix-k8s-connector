@@ -24,10 +24,11 @@ version:
 	@echo $(VERSION)
 
 image:
-	docker build -t $(IMAGE) $(LATEST) .
+	docker build -t $(IMAGE) -t $(LATEST) .
 
 push:
-	docker push $(IMAGE) $(LATEST)
+	docker push $(IMAGE)
+	docker push $(LATEST)
 
 test:
 	go test ./pkg/...
