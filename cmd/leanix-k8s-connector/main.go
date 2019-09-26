@@ -29,7 +29,7 @@ const (
 	lxWorkspaceFlag         string = "lx-workspace"
 )
 
-const connectorVersion string = "1.0.0"
+const connectorVersion string = "1.1.0"
 const lxVersion string = "1.0.0"
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
