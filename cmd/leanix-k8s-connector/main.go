@@ -58,7 +58,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	blacklistedNamespaces := viper.GetStringSlice(blacklistNamespacesFlag)
+
+	log.Debug("Get blacklist namespaces list...")
+	blacklistedNamespacesList := viper.GetStringSlice(blacklistNamespacesFlag)
+	blacklistedNamespaces, err := kubernetes.Namespaces(blacklistedNamespacesList)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("Getting blacklist namespaces list done.")
 	log.Infof("Namespace blacklist: %v", blacklistedNamespaces)
 
 	log.Debug("Get deployment list...")
