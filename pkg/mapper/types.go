@@ -1,6 +1,6 @@
 package mapper
 
-// KubernetesObject describes an object that is read from the kubernetes api
+// KubernetesObject describes an object that is read from the Kubernetes api
 type KubernetesObject struct {
 	Type string                 `json:"type,omitempty"`
 	ID   string                 `json:"id,omitempty"`

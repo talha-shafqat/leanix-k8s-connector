@@ -5,7 +5,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// MapDeployments maps a kubernetes deployment list to a list of KubernetesObjects
+// MapDeployments maps a Kubernetes deployment list to a list of KubernetesObjects
 func MapDeployments(clusterName string, deployments *appsv1.DeploymentList, nodes *[]corev1.Node) []KubernetesObject {
 	kubernetesObjects := make([]KubernetesObject, len(deployments.Items))
 	for i, d := range deployments.Items {
@@ -14,7 +14,7 @@ func MapDeployments(clusterName string, deployments *appsv1.DeploymentList, node
 	return kubernetesObjects
 }
 
-// MapDeployment maps a single kubernetes deployment to an KubernetesObject
+// MapDeployment maps a single Kubernetes deployment to an KubernetesObject
 func MapDeployment(clusterName string, deployment appsv1.Deployment, nodes *[]corev1.Node) KubernetesObject {
 	kubernetesObject := KubernetesObject{
 		ID:   string(deployment.UID),

@@ -14,7 +14,7 @@ func MapStatefulSets(clusterName string, statefulsets *appsv1.StatefulSetList, n
 	return kubernetesObjects
 }
 
-// MapStatefulSet maps a single kubernetes StatefulSet to an KubernetesObject
+// MapStatefulSet maps a single Kubernetes StatefulSet to an KubernetesObject
 func MapStatefulSet(clusterName string, statefulset appsv1.StatefulSet, nodes *[]corev1.Node) KubernetesObject {
 	kubernetesObject := KubernetesObject{
 		ID:   string(statefulset.UID),

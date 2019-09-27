@@ -163,7 +163,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
 |localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
 |claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
@@ -227,7 +227,7 @@ The following command deploys the connector to the Kubernetes cluster and overwr
 |storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
 |secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
 |container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option.|
+|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`.|
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
@@ -284,6 +284,9 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 ## Version history
 
-|Connector version  |Integration version  |Helm chart version  |
-|:-----------------:|:-------------------:|:------------------:|
-|1.0.0              |1.0.0                |1.0.0               |
+[CHANGELOG](CHANGELOG.md)
+
+|Release date  |Connector version  |Integration version  |Helm chart version  |
+|:------------:|:-----------------:|:-------------------:|:------------------:|
+|2019-09-26    |1.1.0              |1.0.0                |1.0.0               |
+|2019-08-28    |1.0.0              |1.0.0                |1.0.0               |
