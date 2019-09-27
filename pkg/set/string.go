@@ -1,6 +1,6 @@
 package set
 
-// String is a helper type to respresent a set of strings
+// String is a helper type to represent a set of strings
 type String struct {
 	Map map[string]bool
 }

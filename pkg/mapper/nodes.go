@@ -73,9 +73,9 @@ func aggregrateMemoryCapacity(nodes *[]corev1.Node) (float64, error) {
 	var memoryCapacityGB float64
 	for _, n := range *nodes {
 		// The Memory() call returns the memory as resource.Quantity. 'Quantity is a fixed-point representation of a number.'
-		// In order to calculate the memory capacity of all nodes, we get the bytes as int64 (hoping it does not exeed the int64 limit...).
-		// We convert the bytes here to GiB to make sure that we do not exeed the limit of float64. This introcudes a rounding error,
-		// which we accept, because a percice value is not of interest for the user output.
+		// In order to calculate the memory capacity of all nodes, we get the bytes as int64 (hoping it does not exceed the int64 limit...).
+		// We convert the bytes here to GiB to make sure that we do not exceed the limit of float64. This introduces a rounding error,
+		// which we accept, because a precise value is not of interest for the user output.
 		b, ok := n.Status.Capacity.Memory().AsInt64()
 		if !ok {
 			return 0, fmt.Errorf("Failed to get memory quantity as type int64")

@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// StatefulSets returns a list of statefulsets filted by the given blacklisted namespaces
+// StatefulSets returns a list of statefulsets filtered by the given blacklisted namespaces
 func (k *API) StatefulSets(blacklistedNamespaces []string) (*appsv1.StatefulSetList, error) {
 	fieldSelector := BlacklistFieldSelector(blacklistedNamespaces)
 	statefulsets, err := k.Client.AppsV1().StatefulSets("").List(metav1.ListOptions{
@@ -19,8 +19,8 @@ func (k *API) StatefulSets(blacklistedNamespaces []string) (*appsv1.StatefulSetL
 	return statefulsets, nil
 }
 
-// StatefulSetsOnNodes returns a list of statefulSets filted by the given blacklisted namespaces
-// and the nodes the statefulSet pods are running on
+// StatefulSetsOnNodes returns a list of statefulsets filtered by the given blacklisted namespaces
+// and the nodes the statefulset pods are running on
 func (k *API) StatefulSetsOnNodes(blacklistedNamespaces []string) (*appsv1.StatefulSetList, *[]corev1.Node, error) {
 	statefulSets, err := k.StatefulSets(blacklistedNamespaces)
 	if err != nil {

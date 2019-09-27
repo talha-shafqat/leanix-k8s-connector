@@ -7,12 +7,12 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// API is an optionated facade for the kubernetes api
+// API is an optionated facade for the Kubernetes api
 type API struct {
 	Client kubernetes.Interface
 }
 
-// NewAPI creates a new kuberntes api client
+// NewAPI creates a new Kubernetes api client
 func NewAPI(config *rest.Config) (*API, error) {
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
@@ -31,7 +31,7 @@ func BlacklistFieldSelector(blacklistedNamespaces []string) string {
 	return strings.Join(namespaceSelectors, ",")
 }
 
-// Prefix return a new list where all items are prefixed with the string given as prefix
+// Prefix returns a new list where all items are prefixed with the string given as prefix
 func Prefix(l []string, p string) []string {
 	r := make([]string, 0)
 	for _, e := range l {

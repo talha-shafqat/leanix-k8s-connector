@@ -40,7 +40,7 @@ func TestMapStatefulSets(t *testing.T) {
 }
 
 func TestMapStatefulSet(t *testing.T) {
-	// init data which is constrant accross all tests
+	// init data which is constant accross all tests
 	clusterName := "mycluster"
 	name := "myapp"
 	id, err := uuid.NewRandom()
@@ -91,7 +91,7 @@ func TestMapStatefulSet(t *testing.T) {
 				isRedundantAcrossAvailabilityZones: false,
 			},
 		},
-		"multiple replicas on multiple zone redudant nodes": {
+		"multiple replicas on multiple zone redundant nodes": {
 			input: testInput{
 				id:                 id,
 				replicas:           2,

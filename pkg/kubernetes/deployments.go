@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Deployments returns a list of deployments filted by the given blacklisted namespaces
+// Deployments returns a list of deployments filtered by the given blacklisted namespaces
 func (k *API) Deployments(blacklistedNamespaces []string) (*appsv1.DeploymentList, error) {
 	fieldSelector := BlacklistFieldSelector(blacklistedNamespaces)
 	deployments, err := k.Client.AppsV1().Deployments("").List(metav1.ListOptions{
@@ -19,8 +19,8 @@ func (k *API) Deployments(blacklistedNamespaces []string) (*appsv1.DeploymentLis
 	return deployments, nil
 }
 
-// DeploymentsOnNodes returns a list of deployments filted by the given blacklisted namespaces
-// and the nodes the deploment pods are running on
+// DeploymentsOnNodes returns a list of deployments filtered by the given blacklisted namespaces
+// and the nodes the deployment pods are running on
 func (k *API) DeploymentsOnNodes(blacklistedNamespaces []string) (*appsv1.DeploymentList, *[]corev1.Node, error) {
 	deployments, err := k.Deployments(blacklistedNamespaces)
 	if err != nil {
