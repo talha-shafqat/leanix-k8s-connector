@@ -163,7 +163,7 @@ func main() {
 
 	for gvr := range groupVersionResources {
 		if _, ok := resourceGroupWhitelist[gvr.Group][gvr.Resource]; !ok {
-			log.Info("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
+			log.Debugf("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
 			continue
 		}
 		instances, err := dynClient.Resource(gvr).List(metav1.ListOptions{})
