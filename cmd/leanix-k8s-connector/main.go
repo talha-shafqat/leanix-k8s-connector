@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
@@ -70,13 +71,25 @@ func main() {
 
 	log.Debugf("Kubernetes master from config: %s", config.Host)
 
-	kubernetes, err := kubernetes.NewAPI(config)
+	kubernetesAPI, err := kubernetes.NewAPI(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 	dynClient, err := dynamic.NewForConfig(config)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	resourcesList, err := ServerPreferredListableResources(kubernetes.Client.Discovery())
+	log.Debug("Get blacklist namespaces list...")
+	blacklistedNamespacesList := viper.GetStringSlice(blacklistNamespacesFlag)
+	blacklistedNamespaces, err := kubernetesAPI.Namespaces(blacklistedNamespacesList)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("Getting blacklist namespaces list done.")
+	log.Infof("Namespace blacklist: %v", reflect.ValueOf(blacklistedNamespaces).MapKeys())
+
+	resourcesList, err := ServerPreferredListableResources(kubernetesAPI.Client.Discovery())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,9 +98,55 @@ func main() {
 		log.Panic(err)
 	}
 
+	log.Debug("Listing nodes...")
+	nodes, err := kubernetesAPI.Nodes()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Debug("Listing nodes done.")
+
+	log.Debug("Map nodes to Kubernetes object")
+	clusterKubernetesObject, err := mapper.MapNodes(
+		viper.GetString("clustername"),
+		nodes,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	kubernetesObjects := make([]mapper.KubernetesObject, 0)
+	kubernetesObjects = append(kubernetesObjects, *clusterKubernetesObject)
+
+	whitelistResouces := map[string]interface{}{
+		"deployments":               struct{}{},
+		"statefulsets":              struct{}{},
+		"daemonsets":                struct{}{},
+		"serviceaccounts":           struct{}{},
+		"customresourcedefinitions": struct{}{},
+		"clusterrolebindings":       struct{}{},
+		"networkpolicies":           struct{}{},
+		"rolebindings":              struct{}{},
+		"horizontalpodautoscalers":  struct{}{},
+		"podsecuritypolicies":       struct{}{},
+		"namespaces":                struct{}{},
+		"clusterroles":              struct{}{},
+		"roles":                     struct{}{},
+		"pods":                      struct{}{},
+		"nodes":                     struct{}{},
+		"containers":                struct{}{},
+		"services":                  struct{}{},
+		"ingresses":                 struct{}{},
+		"persistentvolumes":         struct{}{},
+		"persistentvolumeclaims":    struct{}{},
+		"storageclasses":            struct{}{},
+		"configmaps":                struct{}{},
+		"cronjobs":                  struct{}{},
+		"jobs":                      struct{}{},
+	}
+
 	for gvr := range groupVersionResources {
-		if gvr.Resource == "secret" {
+		if _, ok := whitelistResouces[gvr.Resource]; !ok {
+			log.Debug("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
 			continue
 		}
 		instances, err := dynClient.Resource(gvr).List(metav1.ListOptions{})
@@ -95,6 +154,9 @@ func main() {
 			log.Panic(err)
 		}
 		for _, i := range instances.Items {
+			if _, ok := blacklistedNamespaces[i.GetNamespace()]; ok {
+				continue
+			}
 			nko := mapper.KubernetesObject{
 				Type: i.GetKind(),
 				ID:   string(i.GetUID()),
@@ -102,57 +164,7 @@ func main() {
 			}
 			kubernetesObjects = append(kubernetesObjects, nko)
 		}
-		log.Info(instances)
 	}
-
-	// log.Debug("Get blacklist namespaces list...")
-	// blacklistedNamespacesList := viper.GetStringSlice(blacklistNamespacesFlag)
-	// blacklistedNamespaces, err := kubernetes.Namespaces(blacklistedNamespacesList)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Debug("Getting blacklist namespaces list done.")
-	// log.Infof("Namespace blacklist: %v", blacklistedNamespaces)
-
-	// log.Debug("Get deployment list...")
-	// deployments, deploymentNodes, err := kubernetes.DeploymentsOnNodes(blacklistedNamespaces)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Debug("Getting deployment list done.")
-
-	// log.Debug("Get statefulset list...")
-	// statefulsets, statefulsetNodes, err := kubernetes.StatefulSetsOnNodes(blacklistedNamespaces)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Debug("Getting statefulset list done.")
-
-	// log.Debug("Listing nodes...")
-	// nodes, err := kubernetes.Nodes()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Debug("Listing nodes done.")
-
-	// log.Debug("Map nodes to Kubernetes object")
-	// clusterKubernetesObject, err := mapper.MapNodes(
-	// 	viper.GetString("clustername"),
-	// 	nodes,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// log.Debug("Map deployments to Kubernetes objects")
-	// deploymentKubernetesObjects := mapper.MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
-	// log.Debug("Map statefulsets to Kubernetes objects")
-	// statefulsetKubernetesObjects := mapper.MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
-
-	// kubernetesObjects := make([]mapper.KubernetesObject, 0)
-	// kubernetesObjects = append(kubernetesObjects, *clusterKubernetesObject)
-	// kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
-	// kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
 
 	ldif := mapper.LDIF{
 		ConnectorID:      viper.GetString(connectorIDFlag),
