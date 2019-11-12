@@ -117,36 +117,53 @@ func main() {
 	kubernetesObjects := make([]mapper.KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, *clusterKubernetesObject)
 
-	whitelistResouces := map[string]interface{}{
-		"deployments":               struct{}{},
-		"statefulsets":              struct{}{},
-		"daemonsets":                struct{}{},
-		"serviceaccounts":           struct{}{},
-		"customresourcedefinitions": struct{}{},
-		"clusterrolebindings":       struct{}{},
-		"networkpolicies":           struct{}{},
-		"rolebindings":              struct{}{},
-		"horizontalpodautoscalers":  struct{}{},
-		"podsecuritypolicies":       struct{}{},
-		"namespaces":                struct{}{},
-		"clusterroles":              struct{}{},
-		"roles":                     struct{}{},
-		"pods":                      struct{}{},
-		"nodes":                     struct{}{},
-		"containers":                struct{}{},
-		"services":                  struct{}{},
-		"ingresses":                 struct{}{},
-		"persistentvolumes":         struct{}{},
-		"persistentvolumeclaims":    struct{}{},
-		"storageclasses":            struct{}{},
-		"configmaps":                struct{}{},
-		"cronjobs":                  struct{}{},
-		"jobs":                      struct{}{},
+	resourceGroupWhitelist := map[string]map[string]interface{}{
+		"": map[string]interface{}{
+			"serviceaccounts":        struct{}{},
+			"services":               struct{}{},
+			"nodes":                  struct{}{},
+			"pods":                   struct{}{},
+			"namespaces":             struct{}{},
+			"configmaps":             struct{}{},
+			"persistentvolumes":      struct{}{},
+			"persistentvolumeclaims": struct{}{},
+		},
+		"apps": map[string]interface{}{
+			"deployments":  struct{}{},
+			"statefulsets": struct{}{},
+			"daemonsets":   struct{}{},
+		},
+		"apiextensions.k8s.io": map[string]interface{}{
+			"customresourcedefinitions": struct{}{},
+		},
+		"rbac.authorization.k8s.io": map[string]interface{}{
+			"clusterrolebindings": struct{}{},
+			"rolebindings":        struct{}{},
+			"clusterroles":        struct{}{},
+			"roles":               struct{}{},
+		},
+		"networking.k8s.io": map[string]interface{}{
+			"ingresses":       struct{}{},
+			"networkpolicies": struct{}{},
+		},
+		"autoscaling": map[string]interface{}{
+			"horizontalpodautoscalers": struct{}{},
+		},
+		"policy": map[string]interface{}{
+			"podsecuritypolicies": struct{}{},
+		},
+		"storage.k8s.io": map[string]interface{}{
+			"storageclasses": struct{}{},
+		},
+		"batch": map[string]interface{}{
+			"cronjobs": struct{}{},
+			"jobs":     struct{}{},
+		},
 	}
 
 	for gvr := range groupVersionResources {
-		if _, ok := whitelistResouces[gvr.Resource]; !ok {
-			log.Debug("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
+		if _, ok := resourceGroupWhitelist[gvr.Group][gvr.Resource]; !ok {
+			log.Info("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
 			continue
 		}
 		instances, err := dynClient.Resource(gvr).List(metav1.ListOptions{})
