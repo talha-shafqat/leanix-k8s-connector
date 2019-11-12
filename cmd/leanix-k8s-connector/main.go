@@ -11,6 +11,7 @@ import (
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
 	"github.com/leanix/leanix-k8s-connector/pkg/mapper"
 	"github.com/leanix/leanix-k8s-connector/pkg/storage"
+	"github.com/leanix/leanix-k8s-connector/pkg/version"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
@@ -37,7 +38,6 @@ const (
 	localFlag               string = "local"
 )
 
-const connectorVersion string = "1.1.0"
 const lxVersion string = "1.0.0"
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -50,7 +50,7 @@ func main() {
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
 	log.Info("----------Start----------")
-	log.Infof("LeanIX connector version: %s", connectorVersion)
+	log.Infof("LeanIX connector version: %s", version.VERSION)
 	log.Infof("LeanIX integration version: %s", lxVersion)
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
 	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
