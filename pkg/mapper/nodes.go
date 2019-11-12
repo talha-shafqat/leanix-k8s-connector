@@ -106,11 +106,10 @@ func labelSet(nodes *[]corev1.Node) map[string][]string {
 	labels := make(map[string][]string)
 	for _, n := range *nodes {
 		for l, v := range n.Labels {
-			sanitizedLabel := replacer.Replace(l)
-			if labelsAsSet[sanitizedLabel] == nil {
-				labelsAsSet[sanitizedLabel] = set.NewStringSet()
+			if labelsAsSet[l] == nil {
+				labelsAsSet[l] = set.NewStringSet()
 			}
-			labelsAsSet[sanitizedLabel].Add(v)
+			labelsAsSet[l].Add(v)
 		}
 	}
 	for k, v := range labelsAsSet {
