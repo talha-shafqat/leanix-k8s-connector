@@ -21,14 +21,14 @@ func MapDeployment(clusterName string, deployment appsv1.Deployment, nodes *[]co
 		Type: "deployment",
 		Data: make(map[string]interface{}),
 	}
-	for k, v := range deployment.Labels {
-		kubernetesObject.Data[replacer.Replace(k)] = v
-	}
-	redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
-	kubernetesObject.Data["clusterName"] = clusterName
-	kubernetesObject.Data["isStateful"] = false
-	kubernetesObject.Data["isRedundant"] = deployment.Status.Replicas > 1
-	kubernetesObject.Data["isRedundantAcrossNodes"] = redundantAcrossNodes
-	kubernetesObject.Data["isRedundantAcrossAvailabilityZones"] = redundantAcrossAvailabilityZones
+	// for k, v := range deployment.Labels {
+	// 	kubernetesObject.Data[replacer.Replace(k)] = v
+	// }
+	// redundantAcrossNodes, redundantAcrossAvailabilityZones := redundant(nodes)
+	// kubernetesObject.Data["clusterName"] = clusterName
+	// kubernetesObject.Data["isStateful"] = false
+	// kubernetesObject.Data["isRedundant"] = deployment.Status.Replicas > 1
+	// kubernetesObject.Data["isRedundantAcrossNodes"] = redundantAcrossNodes
+	// kubernetesObject.Data["isRedundantAcrossAvailabilityZones"] = redundantAcrossAvailabilityZones
 	return kubernetesObject
 }
