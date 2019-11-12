@@ -6,7 +6,7 @@ rbac: true
 
 image:
   repository: leanix/leanix-k8s-connector
-  tag: latest
+  tag: 23d019b
   pullPolicy: Always
 
 args:
