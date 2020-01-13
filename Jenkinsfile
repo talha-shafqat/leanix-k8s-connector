@@ -32,7 +32,7 @@ pipeline {
                 sh 'make push'
             }
         }
-        stage('Deploy to int cluster') {
+        stage('Deploy to test cluster') {
             when {
                 anyOf {
                     branch 'master'
