@@ -186,7 +186,7 @@ func main() {
 	ldif := mapper.LDIF{
 		ConnectorID:      viper.GetString(connectorIDFlag),
 		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: connectorVersion,
+		ConnectorVersion: version.VERSION,
 		LxVersion:        lxVersion,
 		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
