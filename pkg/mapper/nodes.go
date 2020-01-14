@@ -117,13 +117,3 @@ func labelSet(nodes *[]corev1.Node) map[string][]string {
 	}
 	return labels
 }
-
-func redundant(nodes *[]corev1.Node) (bool, bool) {
-	nodeNames := set.NewStringSet()
-	availabilityZones := set.NewStringSet()
-	for _, n := range *nodes {
-		nodeNames.Add(n.GetName())
-		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
-	}
-	return len(nodeNames.Items()) > 1, len(availabilityZones.Items()) > 1
-}
