@@ -16,7 +16,7 @@ pipeline {
                 sh 'make image'
                 sh 'docker run leanix/leanix-k8s-connector:${VERSION} --help | grep "pflag: help requested" '
                 sh 'docker push leanix/leanix-k8s-connector:${VERSION}'
-                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${VERSION} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.secretName=azure-secret --set args.azureblob.container=connector --set args.connectorID=leanix-int --set args.lxWorkspace=leanix --set args.verbose=true'
+                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${VERSION} --set args.clustername=leanix-cluster --set args.storageBackend=azureblob --set args.azureblob.secretName=azure-secret --set args.azureblob.container=connector --set args.connectorID=leanix-int --set args.lxWorkspace=leanix --set args.verbose=true'
             }
         }
         stage('Build') {
@@ -32,7 +32,7 @@ pipeline {
                 sh 'make push'
             }
         }
-        stage('Deploy to int cluster') {
+        stage('Deploy to test cluster') {
             when {
                 anyOf {
                     branch 'master'
@@ -40,7 +40,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${VERSION} --set args.clustername=leanix-westeurope-int --set args.storageBackend=azureblob --set args.azureblob.secretName=azure-secret --set args.azureblob.container=connector --set args.connectorID=leanix-int --set args.lxWorkspace=leanix'
+                sh 'helm upgrade --install leanix-k8s-connector ./helm/leanix-k8s-connector --set image.tag=${VERSION} --set args.clustername=leanix-cluster --set args.storageBackend=azureblob --set args.azureblob.secretName=azure-secret --set args.azureblob.container=connector --set args.connectorID=leanix-int --set args.lxWorkspace=leanix'
             }
         }
         // stage('Release approval'){

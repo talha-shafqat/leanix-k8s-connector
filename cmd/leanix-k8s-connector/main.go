@@ -4,16 +4,24 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
 	"github.com/leanix/leanix-k8s-connector/pkg/mapper"
 	"github.com/leanix/leanix-k8s-connector/pkg/storage"
+	"github.com/leanix/leanix-k8s-connector/pkg/version"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/op/go-logging"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/dynamic"
 	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 const (
@@ -27,9 +35,9 @@ const (
 	connectorIDFlag         string = "connector-id"
 	blacklistNamespacesFlag string = "blacklist-namespaces"
 	lxWorkspaceFlag         string = "lx-workspace"
+	localFlag               string = "local"
 )
 
-const connectorVersion string = "1.1.0"
 const lxVersion string = "1.0.0"
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
@@ -42,48 +50,56 @@ func main() {
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
 	log.Info("----------Start----------")
-	log.Infof("LeanIX connector version: %s", connectorVersion)
+	log.Infof("LeanIX connector version: %s", version.VERSION)
 	log.Infof("LeanIX integration version: %s", lxVersion)
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
 	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
-	// use the current context in kubeconfig
-	config, err := restclient.InClusterConfig()
-	if err != nil {
-		log.Fatalf("Failed to load kube config. Running in Kubernetes?\n%s", err)
+	var config *restclient.Config
+	if viper.GetBool(localFlag) {
+		config, err = clientcmd.BuildConfigFromFlags("", filepath.Join(homedir.HomeDir(), ".kube", "config"))
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		// use the current context in kubeconfig
+		config, err = restclient.InClusterConfig()
+		if err != nil {
+			log.Fatalf("Failed to load kube config. Running in Kubernetes?\n%s", err)
+		}
 	}
+
 	log.Debugf("Kubernetes master from config: %s", config.Host)
 
-	kubernetes, err := kubernetes.NewAPI(config)
+	kubernetesAPI, err := kubernetes.NewAPI(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dynClient, err := dynamic.NewForConfig(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Debug("Get blacklist namespaces list...")
 	blacklistedNamespacesList := viper.GetStringSlice(blacklistNamespacesFlag)
-	blacklistedNamespaces, err := kubernetes.Namespaces(blacklistedNamespacesList)
+	blacklistedNamespaces, err := kubernetesAPI.Namespaces(blacklistedNamespacesList)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Debug("Getting blacklist namespaces list done.")
-	log.Infof("Namespace blacklist: %v", blacklistedNamespaces)
+	log.Infof("Namespace blacklist: %v", reflect.ValueOf(blacklistedNamespaces).MapKeys())
 
-	log.Debug("Get deployment list...")
-	deployments, deploymentNodes, err := kubernetes.DeploymentsOnNodes(blacklistedNamespaces)
+	resourcesList, err := ServerPreferredListableResources(kubernetesAPI.Client.Discovery())
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("Getting deployment list done.")
-
-	log.Debug("Get statefulset list...")
-	statefulsets, statefulsetNodes, err := kubernetes.StatefulSetsOnNodes(blacklistedNamespaces)
+	groupVersionResources, err := discovery.GroupVersionResources(resourcesList)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
-	log.Debug("Getting statefulset list done.")
 
 	log.Debug("Listing nodes...")
-	nodes, err := kubernetes.Nodes()
+	nodes, err := kubernetesAPI.Nodes()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,20 +114,79 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Debug("Map deployments to Kubernetes objects")
-	deploymentKubernetesObjects := mapper.MapDeployments(viper.GetString(clusterNameFlag), deployments, deploymentNodes)
-	log.Debug("Map statefulsets to Kubernetes objects")
-	statefulsetKubernetesObjects := mapper.MapStatefulSets(viper.GetString(clusterNameFlag), statefulsets, statefulsetNodes)
-
 	kubernetesObjects := make([]mapper.KubernetesObject, 0)
 	kubernetesObjects = append(kubernetesObjects, *clusterKubernetesObject)
-	kubernetesObjects = append(kubernetesObjects, deploymentKubernetesObjects...)
-	kubernetesObjects = append(kubernetesObjects, statefulsetKubernetesObjects...)
+
+	resourceGroupWhitelist := map[string]map[string]interface{}{
+		"": map[string]interface{}{
+			"serviceaccounts":        struct{}{},
+			"services":               struct{}{},
+			"nodes":                  struct{}{},
+			"pods":                   struct{}{},
+			"namespaces":             struct{}{},
+			"configmaps":             struct{}{},
+			"persistentvolumes":      struct{}{},
+			"persistentvolumeclaims": struct{}{},
+		},
+		"apps": map[string]interface{}{
+			"deployments":  struct{}{},
+			"statefulsets": struct{}{},
+			"daemonsets":   struct{}{},
+		},
+		"apiextensions.k8s.io": map[string]interface{}{
+			"customresourcedefinitions": struct{}{},
+		},
+		"rbac.authorization.k8s.io": map[string]interface{}{
+			"clusterrolebindings": struct{}{},
+			"rolebindings":        struct{}{},
+			"clusterroles":        struct{}{},
+			"roles":               struct{}{},
+		},
+		"networking.k8s.io": map[string]interface{}{
+			"ingresses":       struct{}{},
+			"networkpolicies": struct{}{},
+		},
+		"autoscaling": map[string]interface{}{
+			"horizontalpodautoscalers": struct{}{},
+		},
+		"policy": map[string]interface{}{
+			"podsecuritypolicies": struct{}{},
+		},
+		"storage.k8s.io": map[string]interface{}{
+			"storageclasses": struct{}{},
+		},
+		"batch": map[string]interface{}{
+			"cronjobs": struct{}{},
+			"jobs":     struct{}{},
+		},
+	}
+
+	for gvr := range groupVersionResources {
+		if _, ok := resourceGroupWhitelist[gvr.Group][gvr.Resource]; !ok {
+			log.Debugf("Not scanning resouce %s", strings.Join([]string{gvr.Group, gvr.Version, gvr.Resource}, "/"))
+			continue
+		}
+		instances, err := dynClient.Resource(gvr).List(metav1.ListOptions{})
+		if err != nil {
+			log.Panic(err)
+		}
+		for _, i := range instances.Items {
+			if _, ok := blacklistedNamespaces[i.GetNamespace()]; ok {
+				continue
+			}
+			nko := mapper.KubernetesObject{
+				Type: i.GetKind(),
+				ID:   string(i.GetUID()),
+				Data: i.Object,
+			}
+			kubernetesObjects = append(kubernetesObjects, nko)
+		}
+	}
 
 	ldif := mapper.LDIF{
 		ConnectorID:      viper.GetString(connectorIDFlag),
 		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: connectorVersion,
+		ConnectorVersion: version.VERSION,
 		LxVersion:        lxVersion,
 		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
@@ -137,8 +212,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info("-----------End-----------")
 	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+	log.Info("-----------End-----------")
+}
+
+func ServerPreferredListableResources(d discovery.DiscoveryInterface) ([]*metav1.APIResourceList, error) {
+	all, err := discovery.ServerPreferredResources(d)
+	return discovery.FilteredBy(discovery.ResourcePredicateFunc(func(groupVersion string, r *metav1.APIResource) bool {
+		return strings.Contains(r.Verbs.String(), "list")
+	}), all), err
 }
 
 func parseFlags() error {
@@ -152,6 +234,7 @@ func parseFlags() error {
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.StringSlice(blacklistNamespacesFlag, []string{""}, "list of namespaces that are not scanned")
 	flag.String(lxWorkspaceFlag, "", "name of the LeanIX workspace the data is sent to")
+	flag.Bool(localFlag, false, "use local kubeconfig from home folder")
 	flag.Parse()
 	// Let flags overwrite configs in viper
 	err := viper.BindPFlags(flag.CommandLine)

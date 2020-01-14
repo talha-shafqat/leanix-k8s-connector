@@ -78,9 +78,9 @@ func TestAggregateNodes(t *testing.T) {
 	}
 	expectedLabelAggregate := map[string][]string{
 		"name": []string{"nodepool-1", "nodepool-2"},
-		"failure_domain_beta_kubernetes_io_region": []string{"westeurope"},
-		"failure_domain_beta_kubernetes_io_zone":   []string{"1", "2"},
-		"beta_kubernetes_io_instance_type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
+		"failure-domain.beta.kubernetes.io/region": []string{"westeurope"},
+		"failure-domain.beta.kubernetes.io/zone":   []string{"1", "2"},
+		"beta.kubernetes.io/instance-type":         []string{"Standard_D2s_v3", "Standard_D8s_v3"},
 	}
 
 	nodeAggregate, err := aggregrateNodes(nodes)
@@ -103,91 +103,6 @@ func TestAggregateNodes(t *testing.T) {
 	for k, v := range expectedLabelAggregate {
 		assert.ElementsMatch(t, v, nodeAggregate["labels"].(map[string][]string)[k])
 	}
-}
-
-func TestRedundant(t *testing.T) {
-	type testExpected struct {
-		multipleNodes bool
-		zoneRedundant bool
-	}
-	tests := map[string]struct {
-		input    []corev1.Node
-		expected testExpected
-	}{
-		"single node": {
-			input: []corev1.Node{
-				corev1.Node{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "nodepool-1",
-						Labels: map[string]string{
-							"failure-domain.beta.kubernetes.io/zone": "1",
-						},
-					},
-				},
-			},
-			expected: testExpected{
-				multipleNodes: false,
-				zoneRedundant: false,
-			},
-		},
-		"multiple nodes": {
-			input: []corev1.Node{
-				corev1.Node{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "nodepool-1",
-						Labels: map[string]string{
-							"failure-domain.beta.kubernetes.io/zone": "1",
-						},
-					},
-				},
-				corev1.Node{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "nodepool-2",
-						Labels: map[string]string{
-							"failure-domain.beta.kubernetes.io/zone": "1",
-						},
-					},
-				},
-			},
-			expected: testExpected{
-				multipleNodes: true,
-				zoneRedundant: false,
-			},
-		},
-		"multiple zone redundant nodes": {
-			input: []corev1.Node{
-				corev1.Node{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "nodepool-1",
-						Labels: map[string]string{
-							"failure-domain.beta.kubernetes.io/zone": "1",
-						},
-					},
-				},
-				corev1.Node{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "nodepool-2",
-						Labels: map[string]string{
-							"failure-domain.beta.kubernetes.io/zone": "2",
-						},
-					},
-				},
-			},
-			expected: testExpected{
-				multipleNodes: true,
-				zoneRedundant: true,
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			multipleNodes, zoneRedundant := redundant(&test.input)
-			assert.Equal(t, test.expected.multipleNodes, multipleNodes)
-			assert.Equal(t, test.expected.zoneRedundant, zoneRedundant)
-		})
-	}
-
 }
 
 func TestAggregrateMemoryCapacity(t *testing.T) {

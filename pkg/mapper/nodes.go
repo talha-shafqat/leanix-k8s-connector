@@ -106,25 +106,14 @@ func labelSet(nodes *[]corev1.Node) map[string][]string {
 	labels := make(map[string][]string)
 	for _, n := range *nodes {
 		for l, v := range n.Labels {
-			sanitizedLabel := replacer.Replace(l)
-			if labelsAsSet[sanitizedLabel] == nil {
-				labelsAsSet[sanitizedLabel] = set.NewStringSet()
+			if labelsAsSet[l] == nil {
+				labelsAsSet[l] = set.NewStringSet()
 			}
-			labelsAsSet[sanitizedLabel].Add(v)
+			labelsAsSet[l].Add(v)
 		}
 	}
 	for k, v := range labelsAsSet {
 		labels[k] = v.Items()
 	}
 	return labels
-}
-
-func redundant(nodes *[]corev1.Node) (bool, bool) {
-	nodeNames := set.NewStringSet()
-	availabilityZones := set.NewStringSet()
-	for _, n := range *nodes {
-		nodeNames.Add(n.GetName())
-		availabilityZones.Add(n.Labels["failure-domain.beta.kubernetes.io/zone"])
-	}
-	return len(nodeNames.Items()) > 1, len(availabilityZones.Items()) > 1
 }

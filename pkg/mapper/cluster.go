@@ -14,7 +14,7 @@ func MapNodes(clusterName string, nodes *corev1.NodeList) (*KubernetesObject, er
 	nodeAggregate["clusterName"] = clusterName
 	return &KubernetesObject{
 		ID:   clusterName,
-		Type: "cluster",
+		Type: "Cluster",
 		Data: nodeAggregate,
 	}, nil
 }

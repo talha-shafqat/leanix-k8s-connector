@@ -4,3 +4,4 @@ bin
 *.json
 *.log
 vendor
+*.ldif
