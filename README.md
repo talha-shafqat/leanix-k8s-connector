@@ -295,7 +295,8 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 [CHANGELOG](CHANGELOG.md)
 
-| Release date | Connector version | Integration version | Helm chart version |
-| :----------: | :---------------: | :-----------------: | :----------------: |
-|  2019-09-26  |       1.1.0       |        1.0.0        |       1.0.0        |
-|  2019-08-28  |       1.0.0       |        1.0.0        |       1.0.0        |
+| Release date | Connector version | Integration version | Helm chart version | Container image tag |
+| :----------: | :---------------: | :-----------------: | :----------------: | :-----------------: |
+|  2020-01-14  |    2.0.0-beta1    |        1.0.0        |    2.0.0-beta1     | 2.0.0-beta1-d5555d2 |
+|  2019-09-26  |       1.1.0       |        1.0.0        |       1.0.0        |       23d019b       |
+|  2019-08-28  |       1.0.0       |        1.0.0        |       1.0.0        |       b0bc069       |

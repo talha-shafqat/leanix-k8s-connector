@@ -1,6 +1,44 @@
 # LeanIX Kubernetes Connector Changelog
 
-## Release 2019-09-26
+## Release 2020-01-14 - 2.0.0-beta1
+
+### Release Notes
+
+* New Features
+  * Enable information extraction for the following Kubernetes resources:
+    * serviceaccounts
+    * services
+    * nodes
+    * pods
+    * namespaces
+    * configmaps
+    * persistentvolumes
+    * persistentvolumeclaims
+    * deployments
+    * statefulsets
+    * daemonsets
+    * customresourcedefinitions
+    * clusterrolebindings
+    * rolebindings
+    * clusterroles
+    * roles
+    * ingresses
+    * networkpolicies
+    * horizontalpodautoscalers
+    * podsecuritypolicies
+    * storageclasses
+    * cronjobs
+    * jobs
+
+* Removed Features
+  * Custom Kubernetes resource extraction and information aggregation for:
+    * deployments
+    * statefulsets
+
+* Changes
+  * Permission change for the `leanix-k8s-connector` service account
+
+## Release 2019-09-26 - 1.1.0
 
 ### Release Notes
 
