@@ -14,7 +14,7 @@ entries:
     appVersion: 1.1.0
     created: "2020-01-14T10:54:39.45708+01:00"
     description: Retrieves information from Kubernetes cluster
-    digest: 1d68e40b345b9cfcf5d2793438743f3dd713b465a47de5c2a26afa1a0ddbc226
+    digest: aa3ee10eefe30e61e37058762b031bdee11cb9dd67afecdf6e831335d5c16e0f
     name: leanix-k8s-connector
     urls:
     - leanix-k8s-connector-1.0.0.tgz
