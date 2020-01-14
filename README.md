@@ -4,19 +4,22 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
 
 ## Table of contents
 
-- [Overview](#Overview)
-- [Getting started](#Getting-started)
-  - [Architecture](#Architecture)
-  - [Installation Helm chart](#Installation---Helm-chart)
-    - [Add LeanIX Kubernetes Connector Helm chart repository](#Add-LeanIX-Kubernetes-Connector-Helm-chart-repository)
-    - [file storage backend](#file-storage-backend)
-    - [azureblob storage backend](#azureblob-storage-backend)
-- [Known issues](#Known-issues)
-- [Version history](#Version-history)
+- [LeanIX Kubernetes Connector](#leanix-kubernetes-connector)
+  - [Table of contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Getting started](#getting-started)
+    - [Architecture](#architecture)
+    - [Installation - Helm chart](#installation---helm-chart)
+      - [Helm 2 requirements](#helm-2-requirements)
+      - [Add LeanIX Kubernetes Connector Helm chart repository](#add-leanix-kubernetes-connector-helm-chart-repository)
+      - [file storage backend](#file-storage-backend)
+      - [azureblob storage backend](#azureblob-storage-backend)
+  - [Known issues](#known-issues)
+  - [Version history](#version-history)
 
 ## Overview
 
-The LeanIX Kubernetes Connector runs in the Kubernetes cluster as a container itself and collects information from the cluster, nodes, deployments, statefulsets and pods. Those informations are sanitized and brought into the LDIF (LeanIX Data Interchange Format) format that LeanIX understands. The output then is stored in the `kubernetes.ldif` file that gets imported into LeanIX.
+The LeanIX Kubernetes Connector runs in the Kubernetes cluster as a container itself and collects information from the cluster like namespaces, deployments, pods, etc.. Those informations are sanitized and brought into the LDIF (LeanIX Data Interchange Format) format that LeanIX understands. The output then is stored in the `kubernetes.ldif` file that gets imported into LeanIX.
 
 ## Getting started
 
@@ -26,13 +29,17 @@ Depending on how you would like to run the LeanIX Kubernetes Connector the insta
 
 The LeanIX Kubernetes Connector gets deployed via a Helm chart into the Kubernetes cluster as a CronJob. All necessary requirements like the ServiceAccount, the ClusterRole and ClusterRoleBinding are deployed also by the Helm chart.
 
-Only necessary permissions are given to the connector as listed below and limited to get, list and watch operations.
+Only necessary permissions are given to the connector as the default ClusterRole `view` and additional permissions listed below that are not part of the ClusterRole `view`.
 
-|apiGroups   |resources                                         |verbs           |
-|------------|--------------------------------------------------|----------------|
-|""          |namespaces, nodes, pods, replicationcontrollers   |get, list, watch|
-|"apps"      |daemonsets, deployments, replicasets, statefulsets|get, list, watch|
-|"extensions"|daemonsets, deployments, replicasets              |get, list, watch|
+- [Kubernetes ClusterRole view](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles)
+
+| apiGroups                   | resources                                              | verbs            |
+| --------------------------- | ------------------------------------------------------ | ---------------- |
+| ""                          | nodes, persistentvolumes                               | get, list, watch |
+| "apiextensions.k8s.io"      | customresourcedefinitions                              | get, list, watch |
+| "policy"                    | podsecuritypolicies                                    | get, list, watch |
+| "rbac.authorization.k8s.io" | roles, clusterroles, rolebindings, clusterrolebindings | get, list, watch |
+| "storage.k8s.io"            | storageclasses                                         | get, list, watch |
 
 The CronJob is configured to run every minute and spins up a new pod of the LeanIX Kubernetes Connector. As mentioned in the overview the connector creates the `kubernetes.ldif` file and logs into the `leanix-k8s-connector.log` file.
 
@@ -55,7 +62,9 @@ Before you can install the LeanIX Kubernetes Connector make sure that the follow
 - [helm client is installed](https://helm.sh/docs/using_helm/#installing-the-helm-client)
 - [git is installed](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-On the server-side the Helm server component Tiller must be deployed into the Kubernetes cluster.
+#### Helm 2 requirements
+
+On the server-side the Helm server component Tiller must be deployed into the Kubernetes cluster, when you are not using Helm 3.
 
 - [Installing Tiller](https://helm.sh/docs/using_helm/#installing-tiller)
 
@@ -78,7 +87,7 @@ local                 http://127.0.0.1:8879/charts
 leanix                https://raw.githubusercontent.com/leanix/leanix-k8s-connector/master/helm/
 ```
 
-A list of the available LeanIX Kubernetes connector Helm chart versions can be retrieved with the command `helm search leanix` or `helm search leanix-k8s-connector`.
+A list of the available LeanIX Kubernetes connector Helm chart versions can be retrieved with the command `helm search repo leanix`.
 
 ``` bash
 NAME                                        CHART VERSION APP VERSION DESCRIPTION
@@ -154,16 +163,16 @@ Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the 
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
-|Parameter          |Default value            |Provided value      |Notes                                                                                        |
-|-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------|
-|clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                          |
-|connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.  |
-|lxWorkspace        |""                       |leanix              |The name of the LeanIX workspace the data is sent to. Must be provided.                      |
-|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.
-|storageBackend     |file                     |                    |The default value for the storage backend is `file`, if not provided.                        |
-|localFilePath      |/mnt/leanix-k8s-connector|                    |The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|claimName          |""                       |azurefile           |The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
+| Parameter           | Default value             | Provided value       | Notes                                                                                                                                                                                                                                  |
+| ------------------- | ------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| clustername         | kubernetes                | aks-cluster          | The name of the Kubernetes cluster.                                                                                                                                                                                                    |
+| connectorID         | Random UUID               | aks-cluster          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default.                                                                                                                                            |
+| lxWorkspace         | ""                        | leanix               | The name of the LeanIX workspace the data is sent to. Must be provided.                                                                                                                                                                |
+| verbose             | false                     | true                 | Enables verbose logging on the stdout interface of the container.                                                                                                                                                                      |
+| storageBackend      | file                      |                      | The default value for the storage backend is `file`, if not provided.                                                                                                                                                                  |
+| localFilePath       | /mnt/leanix-k8s-connector |                      | The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                  |
+| claimName           | ""                        | azurefile            | The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                                                          |
+| blacklistNameSpaces | kube-system               | kube-system, default | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
@@ -218,16 +227,16 @@ Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the 
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
-|Parameter          |Default value            |Provided value      |Notes                                                                                              |
-|-------------------|-------------------------|--------------------|---------------------------------------------------------------------------------------------------|
-|clustername        |kubernetes               |aks-cluster         |The name of the Kubernetes cluster.                                                                |
-|connectorID        |Random UUID              |aks-cluster         |The name of the Kubernetes cluster. If not provided a random UUID is generated per default.        |
-|lxWorkspace        |""                       |leanix              |The name of the LeanIX workspace the data is sent to. Must be provided.                            |
-|verbose            |false                    |true                |Enables verbose logging on the stdout interface of the container.                                  |
-|storageBackend     |file                     |azureblob           |The default value for the storage backend is `file`, if not provided.                              |
-|secretName         |""                       |azure-secret        |The name of the Kubernetes secret containing the Azure Storage account credentials.                |
-|container          |""                       |leanixk8sconnector  |The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.|
-|blacklistNameSpaces|kube-system              |kube-system, default|Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`.|
+| Parameter           | Default value | Provided value       | Notes                                                                                                                                                                                                                                  |
+| ------------------- | ------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| clustername         | kubernetes    | aks-cluster          | The name of the Kubernetes cluster.                                                                                                                                                                                                    |
+| connectorID         | Random UUID   | aks-cluster          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default.                                                                                                                                            |
+| lxWorkspace         | ""            | leanix               | The name of the LeanIX workspace the data is sent to. Must be provided.                                                                                                                                                                |
+| verbose             | false         | true                 | Enables verbose logging on the stdout interface of the container.                                                                                                                                                                      |
+| storageBackend      | file          | azureblob            | The default value for the storage backend is `file`, if not provided.                                                                                                                                                                  |
+| secretName          | ""            | azure-secret         | The name of the Kubernetes secret containing the Azure Storage account credentials.                                                                                                                                                    |
+| container           | ""            | leanixk8sconnector   | The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                                                    |
+| blacklistNameSpaces | kube-system   | kube-system, default | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
@@ -286,7 +295,7 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 [CHANGELOG](CHANGELOG.md)
 
-|Release date  |Connector version  |Integration version  |Helm chart version  |
-|:------------:|:-----------------:|:-------------------:|:------------------:|
-|2019-09-26    |1.1.0              |1.0.0                |1.0.0               |
-|2019-08-28    |1.0.0              |1.0.0                |1.0.0               |
+| Release date | Connector version | Integration version | Helm chart version |
+| :----------: | :---------------: | :-----------------: | :----------------: |
+|  2019-09-26  |       1.1.0       |        1.0.0        |       1.0.0        |
+|  2019-08-28  |       1.0.0       |        1.0.0        |       1.0.0        |
