@@ -10,6 +10,7 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
   - [Getting started](#getting-started)
     - [Architecture](#architecture)
     - [Installation - Helm chart](#installation---helm-chart)
+      - [Pre-release versions](#pre-release-versions)
       - [Helm 2 requirements](#helm-2-requirements)
       - [Add LeanIX Kubernetes Connector Helm chart repository](#add-leanix-kubernetes-connector-helm-chart-repository)
       - [file storage backend](#file-storage-backend)
@@ -61,6 +62,10 @@ Before you can install the LeanIX Kubernetes Connector make sure that the follow
 - [kubectl is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [helm client is installed](https://helm.sh/docs/using_helm/#installing-the-helm-client)
 - [git is installed](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+#### Pre-release versions
+
+If you want to install pre-release versions of the LeanIX Kubernetes Connector, append the `helm` CLI commands with `--devel`.
 
 #### Helm 2 requirements
 
@@ -297,6 +302,7 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 | Release date | Connector version | Integration version | Helm chart version | Container image tag |
 | :----------: | :---------------: | :-----------------: | :----------------: | :-----------------: |
+|  2020-02-07  |    2.0.0-beta2    |        1.0.0        |    2.0.0-beta1     | 2.0.0-beta2-f8218f4 |
 |  2020-01-14  |    2.0.0-beta1    |        1.0.0        |    2.0.0-beta1     | 2.0.0-beta1-d5555d2 |
 |  2019-09-26  |       1.1.0       |        1.0.0        |       1.0.0        |       23d019b       |
 |  2019-08-28  |       1.0.0       |        1.0.0        |       1.0.0        |       b0bc069       |
