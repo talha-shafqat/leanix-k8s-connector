@@ -31,5 +31,5 @@ jobs:
     - name: Docker login and push image to Docker Hub
       # if: github.ref=='refs/heads/master' && github.ref=='refs/heads/develop'
       run: |
-        docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+        echo ${{ secrets.DOCKER_HUB_PASSWORD }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
         make push
