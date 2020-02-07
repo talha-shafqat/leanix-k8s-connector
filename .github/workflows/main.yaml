@@ -1,0 +1,45 @@
+name: leanix-k8s-connector
+
+on:
+  push:
+    branches:
+    - master
+    - develop
+    - feature/*
+    paths-ignore:
+    - 'helm/**'
+    - '**README.md'
+
+env:
+  VERSION: make version
+  REGISTRY: https://index.docker.io/v1/
+
+jobs:
+  main:
+    name: leanix-k8s-connector
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build and test
+      if: github.ref=='refs/heads/feature/*'
+      run: |
+        make
+        make image
+        docker run leanix/leanix-k8s-connector:${VERSION} --help | grep "pflag: help requested"
+
+    - name: Docker login
+      if: github.ref=='refs/heads/master' && github.ref=='refs/heads/develop'
+      uses: Azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+    - name: Build and push image to Docker Hub
+      if: github.ref=='refs/heads/master' && github.ref=='refs/heads/develop'
+      run: |
+        make
+        make image
+        make push
