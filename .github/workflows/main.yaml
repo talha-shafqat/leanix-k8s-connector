@@ -9,6 +9,8 @@ on:
     paths-ignore:
     - 'helm/**'
     - '**README.md'
+    - '**CHANGELOG.md'
+    - '**publishNewHelmChartVersion.sh'
 
 jobs:
   main:
