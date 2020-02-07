@@ -23,7 +23,6 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build and test
-      if: github.ref=='refs/heads/feature/*'
       run: |
         make
         make image
