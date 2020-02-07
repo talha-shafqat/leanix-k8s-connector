@@ -127,11 +127,13 @@ func main() {
 			"configmaps":             struct{}{},
 			"persistentvolumes":      struct{}{},
 			"persistentvolumeclaims": struct{}{},
+			"replicationcontrollers": struct{}{},
 		},
 		"apps": map[string]interface{}{
 			"deployments":  struct{}{},
 			"statefulsets": struct{}{},
 			"daemonsets":   struct{}{},
+			"replicasets":  struct{}{},
 		},
 		"apiextensions.k8s.io": map[string]interface{}{
 			"customresourcedefinitions": struct{}{},
