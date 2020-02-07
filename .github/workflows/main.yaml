@@ -28,15 +28,8 @@ jobs:
         make image
         docker run leanix/leanix-k8s-connector:${VERSION} --help | grep "pflag: help requested"
 
-    - name: Docker login
-      # if: github.ref=='refs/heads/master' && github.ref=='refs/heads/develop'
-      uses: Azure/docker-login@v1
-      with:
-        login-server: ${{ env.REGISTRY }}
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-    - name: Push image to Docker Hub
+    - name: Docker login and push image to Docker Hub
       # if: github.ref=='refs/heads/master' && github.ref=='refs/heads/develop'
       run: |
+        docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
         make push
