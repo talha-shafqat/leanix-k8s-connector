@@ -183,13 +183,18 @@ func main() {
 		}
 	}
 
+	customFields := mapper.CustomFields{
+		ConnectorInstance: viper.GetString(connectorIDFlag),
+	}
+
 	ldif := mapper.LDIF{
-		ConnectorID:      viper.GetString(connectorIDFlag),
+		ConnectorID:      "Kubernetes",
 		ConnectorType:    "leanix-k8s-connector",
 		ConnectorVersion: version.VERSION,
 		LxVersion:        lxVersion,
 		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
 		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
+		CustomFields:     customFields,
 		Content:          kubernetesObjects,
 	}
 
