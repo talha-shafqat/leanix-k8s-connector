@@ -2,7 +2,7 @@ PROJECT ?= leanix-k8s-connector
 DOCKER_NAMESPACE ?= leanix
 
 # This version-strategy uses git tags to set the version string
-VERSION := 2.0.0-beta1-$(shell git describe --tags --always --dirty)
+VERSION := 2.0.0-beta2-$(shell git describe --tags --always --dirty)
 #
 # This version-strategy uses a manual value to set the version string
 #VERSION := 1.2.3
