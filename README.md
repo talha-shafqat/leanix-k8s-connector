@@ -215,10 +215,9 @@ args:
 
 #### azureblob storage backend
 
-The first step to get started with the `azureblob` storage backend type is to create an Azure Storage account and a container as described in the Azure documentation. In our example we used _leanixk8sconnector_ as container name.
+The first step to get started with the `azureblob` storage backend type is to create an Azure Storage account as described in the Azure documentation.
 
 1. [Create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-quickstart-create-account?tabs=azure-portal)
-2. [Create a container](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal#create-a-container)
 
 Next, create a Kubernetes secret which contains the Azure Storage account name and the Azure Storage account key. The information about the name and the key can be retrieved directly via the Azure portal.
 
@@ -302,6 +301,7 @@ Issue `kubectl delete jobs.batch leanix-k8s-connector-1563961200` and you should
 
 | Release date | Connector version | Integration version | Helm chart version | Container image tag |
 | :----------: | :---------------: | :-----------------: | :----------------: | :-----------------: |
+|  2020-04-28  |    2.0.0-beta3    |        1.0.0        |    2.0.0-beta3     | 2.0.0-beta3-fa5ea6f |
 |  2020-02-07  |    2.0.0-beta2    |        1.0.0        |    2.0.0-beta1     | 2.0.0-beta2-f8218f4 |
 |  2020-01-14  |    2.0.0-beta1    |        1.0.0        |    2.0.0-beta1     | 2.0.0-beta1-d5555d2 |
 |  2019-09-26  |       1.1.0       |        1.0.0        |       1.0.0        |       23d019b       |
