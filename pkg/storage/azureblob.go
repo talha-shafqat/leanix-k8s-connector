@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
-	"os"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 )
@@ -67,20 +65,10 @@ func (u *AzureContainer) Upload(ldif []byte, log []byte) error {
 }
 
 func (u *AzureContainer) uploadFile(name string, content []byte) error {
-	filePath := fmt.Sprintf("/tmp/%s", name)
-	err := ioutil.WriteFile(filePath, content, 0700)
-	if err != nil {
-		return err
-	}
-
 	blobURL := azblob.ContainerURL(*u.Container).NewBlockBlobURL(name)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
 
 	ctx := context.Background()
-	_, err = azblob.UploadFileToBlockBlob(ctx, file, blobURL, azblob.UploadToBlockBlobOptions{})
+	_, err := azblob.UploadBufferToBlockBlob(ctx, content, blobURL, azblob.UploadToBlockBlobOptions{})
 
 	return err
 }
