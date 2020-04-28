@@ -1,5 +1,18 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2020-04-28 - 2.0.0-beta3
+
+### Release Notes
+
+* New Features
+  * Automatic container creation in Azure Storage, when using azureblob as storage backend
+
+* Changes
+  * Switch to Azure Storage Blob Go SDK v0.8.0
+  * Switch from append blob to block blob
+
+> **_NOTE:_** Delete all existing append blobs in the container in Azure Storage, you specified for the LDIF and log file upload. Otherwise the connector run throws an error, as append blobs cannot be overwritten with block blobs.
+
 ## Release 2020-02-07 - 2.0.0-beta2
 
 ### Release Notes

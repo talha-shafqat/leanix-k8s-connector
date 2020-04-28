@@ -2,21 +2,21 @@ apiVersion: v1
 entries:
   leanix-k8s-connector:
   - apiVersion: v1
-    appVersion: 2.0.0-beta2
-    created: "2020-02-07T13:43:59.645982+01:00"
+    appVersion: 2.0.0-beta3
+    created: "2020-04-28T13:30:23.566722+02:00"
     description: Retrieves information from Kubernetes cluster
-    digest: 856b843261c7253dd44cc34460eb1b59ea08f3cdfab71a2c912d73834b952413
+    digest: 63550c4034f8e3b976b46caac780293b9e503c0fbf5523a658b598154bc7ed50
     name: leanix-k8s-connector
     urls:
-    - leanix-k8s-connector-2.0.0-beta1.tgz
-    version: 2.0.0-beta1
+    - leanix-k8s-connector-2.0.0-beta3.tgz
+    version: 2.0.0-beta3
   - apiVersion: v1
     appVersion: 1.1.0
-    created: "2020-02-07T13:43:59.642363+01:00"
+    created: "2020-04-28T13:30:23.558521+02:00"
     description: Retrieves information from Kubernetes cluster
     digest: aa3ee10eefe30e61e37058762b031bdee11cb9dd67afecdf6e831335d5c16e0f
     name: leanix-k8s-connector
     urls:
     - leanix-k8s-connector-1.0.0.tgz
     version: 1.0.0
-generated: "2020-02-07T13:43:59.635738+01:00"
+generated: "2020-04-28T13:30:23.556391+02:00"
