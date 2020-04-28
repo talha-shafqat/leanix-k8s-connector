@@ -35,7 +35,10 @@ func NewAzureBlob(azureOpts *AzureBlobOpts) (*AzureContainer, error) {
 	}
 
 	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
-	URL, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net/%s", azureOpts.AccountName, azureOpts.Container))
+	URL, err := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net/%s", azureOpts.AccountName, azureOpts.Container))
+	if err != nil {
+		return nil, err
+	}
 	container := azblob.NewContainerURL(*URL, pipeline)
 
 	ctx := context.Background()
