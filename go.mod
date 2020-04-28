@@ -3,18 +3,17 @@ module github.com/leanix/leanix-k8s-connector
 go 1.12
 
 require (
-	github.com/Azure/azure-sdk-for-go v29.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.2.0 // indirect
+	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
+	github.com/Azure/azure-sdk-for-go v42.0.0+incompatible
+	github.com/Azure/azure-storage-blob-go v0.8.0
+	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/dnaeon/go-vcr v1.0.1 // indirect
-	github.com/evanphx/json-patch v4.1.0+incompatible // indirect
-	github.com/gogo/protobuf v1.2.1 // indirect
+	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
+	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
-	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
-	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
-	github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -27,9 +26,6 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/arch v0.0.0-20190312162104-788fe5ffcd8c // indirect
-	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c // indirect
-	golang.org/x/net v0.0.0-20190328230028-74de082e2cca // indirect
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -38,5 +34,5 @@ require (
 	k8s.io/client-go v10.0.0+incompatible
 	k8s.io/klog v0.2.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20190401085232-94e1e7b7574c // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
+	sigs.k8s.io/yaml v1.2.0 // indirect
 )
