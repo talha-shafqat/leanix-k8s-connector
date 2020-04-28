@@ -219,7 +219,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+	log.Debug("-----------End-----------")
+	err = uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Info("-----------End-----------")
 }
 
