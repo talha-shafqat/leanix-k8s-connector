@@ -250,7 +250,7 @@ helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.verbose=true \
 --set args.storageBackend=azureblob \
 --set args.azureblob.secretName=azure-secret \
---set args.azureblob.container=leanixk8sconnector
+--set args.azureblob.container=leanixk8sconnector \
 --set args.blacklistNamespaces="{kube-system,default}"
 ```
 
