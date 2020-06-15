@@ -18,6 +18,12 @@ spec:
           {{- end }}
           containers:
           - name: connector
+            securityContext:
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              runAsUser: 65534
+              runAsGroup: 65534
+              allowPrivilegeEscalation: false
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
             env:
             - name: CLUSTERNAME
