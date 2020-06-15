@@ -1,5 +1,21 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2020-06-15 - 2.0.0-beta4
+
+### Release Notes
+
+* Changes
+  * Add `securityContext` section to the Helm chart.
+
+    ```YAML
+    securityContext:
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      allowPrivilegeEscalation: false
+    ```
+
 ## Release 2020-04-28 - 2.0.0-beta3
 
 ### Release Notes
