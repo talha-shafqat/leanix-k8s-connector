@@ -11,7 +11,7 @@ integrationApi:
 
 schedule:
   standard: "*/1 * * * *"
-  integrationApi: "59 */3 * * *"
+  integrationApi: "0 */1 * * *"
 
 image:
   repository: docker.io/leanix/leanix-k8s-connector
