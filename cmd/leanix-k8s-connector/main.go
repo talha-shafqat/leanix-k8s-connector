@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
+	"github.com/leanix/leanix-k8s-connector/pkg/leanix"
 	"github.com/leanix/leanix-k8s-connector/pkg/mapper"
 	"github.com/leanix/leanix-k8s-connector/pkg/storage"
 	"github.com/leanix/leanix-k8s-connector/pkg/version"
@@ -230,6 +231,13 @@ func main() {
 		log.Fatal(err)
 	}
 	// TODO Add Integration-API part here
+	log.Info(viper.GetString(integrationAPIFqdnFlag))
+	log.Info(viper.GetString(integrationAPITokenFlag))
+	accessToken, err := leanix.Authenticate(viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info(accessToken)
 	log.Info("-----------End-----------")
 }
 
