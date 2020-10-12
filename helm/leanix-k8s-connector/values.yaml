@@ -4,14 +4,24 @@
 
 rbac: true
 
+integrationApi:
+  enabled: false
+  url: ""
+  secretName: ""
+
+schedule:
+  standard: "*/1 * * * *"
+  integrationApi: "59 */3 * * *"
+
 image:
-  repository: leanix/leanix-k8s-connector
+  repository: docker.io/leanix/leanix-k8s-connector
   tag: 2.0.0-beta4-1b46be5
   pullPolicy: Always
 
 args:
   clustername: kubernetes
   connectorID: ""
+  connectorVersion: ""
   lxWorkspace: ""
   verbose: false
   storageBackend: file
