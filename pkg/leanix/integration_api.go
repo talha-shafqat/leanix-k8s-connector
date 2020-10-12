@@ -20,12 +20,10 @@ type AuthResponse struct {
 func Authenticate(fqdn string, token string) (string, error) {
 	body := strings.NewReader("grant_type=client_credentials")
 	req, err := http.NewRequest("POST", "https://"+fqdn+"/services/mtm/v1/oauth2/token", body)
-	req.Header.Set("Content-Type", "application/json")
-
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return "", err
 	}
-
 	req.SetBasicAuth("apitoken", token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
