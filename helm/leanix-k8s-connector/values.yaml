@@ -6,7 +6,7 @@ rbac: true
 
 integrationApi:
   enabled: false
-  url: ""
+  fqdn: ""
   secretName: ""
 
 schedule:

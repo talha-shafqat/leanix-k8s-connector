@@ -9,6 +9,8 @@ VERSION := 2.0.0-beta4-$(shell git describe --tags --always)
 
 IMAGE := $(DOCKER_NAMESPACE)/$(PROJECT):$(VERSION)
 LATEST := $(DOCKER_NAMESPACE)/$(PROJECT):latest
+GOOS ?= linux
+GOARCH ?= amd64
 
 .PHONY: all
 
@@ -18,7 +20,7 @@ clean:
 	$(RM) bin/$(PROJECT)
 
 build:
-	CGO_ENABLED=0 go build -o bin/$(PROJECT) -ldflags '-X $(shell go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(PROJECT) -ldflags '-X $(shell go list -m)/pkg/version.VERSION=${VERSION} -extldflags "-static"' ./cmd/$(PROJECT)/main.go
 
 version:
 	@echo $(VERSION)

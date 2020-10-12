@@ -60,14 +60,14 @@ spec:
             - name: CONNECTOR_ID
               value: "{{ .Values.args.connectorID | default uuidv4 }}"
             - name: CONNECTOR_VERSION
-              value: "{{ .Values.args.connectorVersion | default "1.0.0" }}"
+              value: "{{ .Values.args.connectorVersion }}"
             - name: BLACKLIST_NAMESPACES
               value: "{{ .Values.args.blacklistNamespaces | join ", " }}"
             {{- if .Values.integrationApi.enabled }}
             - name: INTEGRATION_API_ENABLED
               value: "true"
-            - name: INTEGRATION_API_URL
-              value: "{{ .Values.integrationApi.url | default "app.leanix.net" }}"
+            - name: INTEGRATION_API_FQDN
+              value: "{{ .Values.integrationApi.fqdn }}"
             - name: INTEGRATION_API_TOKEN
               valueFrom:
                 secretKeyRef:
