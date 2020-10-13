@@ -19,7 +19,9 @@ type AuthResponse struct {
 
 // SyncRunResponse struct
 type SyncRunResponse struct {
-	ID string `json:"id"`
+	ID          string `json:"id"`
+	Status      string `json:"status"`
+	Description string `json:"description"`
 }
 
 // Authenticate uses token to authenticate against MTM and response with access_token
@@ -46,46 +48,40 @@ func Authenticate(fqdn string, token string) (string, error) {
 }
 
 // Upload uploads the generated LDIF to the Integration API and response with id
-func Upload(fqdn string, accessToken string, ldif []byte) (string, error) {
+func Upload(fqdn string, accessToken string, ldif []byte) (SyncRunResponse, error) {
 	body := bytes.NewReader(ldif)
 	req, err := http.NewRequest("POST", "https://"+fqdn+"/services/integration-api/v1/synchronizationRuns", body)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	if err != nil {
-		return "", err
+		return SyncRunResponse{"", "", ""}, err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return SyncRunResponse{"", "", ""}, err
 	}
 	defer resp.Body.Close()
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return SyncRunResponse{"", "", ""}, err
 	}
 	syncRunResponse := SyncRunResponse{}
 	json.Unmarshal(responseData, &syncRunResponse)
-	return syncRunResponse.ID, nil
+	return syncRunResponse, nil
 }
 
 // StartRun starts the Integration API run and response with id
-func StartRun(fqdn string, accessToken string, id string) (string, error) {
+func StartRun(fqdn string, accessToken string, id string) (int, error) {
 	req, err := http.NewRequest("POST", "https://"+fqdn+"/services/integration-api/v1/synchronizationRuns/"+id+"/start", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return resp.StatusCode, err
 	}
 	defer resp.Body.Close()
-	responseData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	syncRunResponse := SyncRunResponse{}
-	json.Unmarshal(responseData, &syncRunResponse)
-	return syncRunResponse.ID, nil
+	return resp.StatusCode, nil
 }
