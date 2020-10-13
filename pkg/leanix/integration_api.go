@@ -70,8 +70,7 @@ func Upload(fqdn string, accessToken string, ldif []byte) (string, error) {
 
 // StartRun starts the Integration API run and response with id
 func StartRun(fqdn string, accessToken string, id string) (string, error) {
-	body := strings.NewReader("")
-	req, err := http.NewRequest("POST", "https://"+fqdn+"/services/integration-api/v1/synchronizationRuns/"+id+"/start", body)
+	req, err := http.NewRequest("POST", "https://"+fqdn+"/services/integration-api/v1/synchronizationRuns/"+id+"/start", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	if err != nil {
