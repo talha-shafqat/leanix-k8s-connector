@@ -196,14 +196,15 @@ func main() {
 	}
 
 	ldif := mapper.LDIF{
-		ConnectorID:      "Kubernetes",
-		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: viper.GetString(connectorVersionFlag),
-		LxVersion:        lxVersion,
-		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
-		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
-		CustomFields:     customFields,
-		Content:          kubernetesObjects,
+		ConnectorID:         "Kubernetes",
+		ConnectorType:       "leanix-k8s-connector",
+		ConnectorVersion:    viper.GetString(connectorVersionFlag),
+		ProcessingDirection: "inbound",
+		LxVersion:           lxVersion,
+		LxWorkspace:         viper.GetString(lxWorkspaceFlag),
+		Description:         "Map Kubernetes objects to LeanIX Fact Sheets",
+		CustomFields:        customFields,
+		Content:             kubernetesObjects,
 	}
 
 	log.Debug("Marshal ldif")
@@ -230,12 +231,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// TODO Add Integration-API part here
-	accessToken, err := leanix.Authenticate(viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
-	if err != nil {
-		log.Fatal(err)
+	if viper.GetBool(integrationAPIFlag) == true {
+		accessToken, err := leanix.Authenticate(viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("Integration API authentication successfully.")
+		syncID, err := leanix.Upload(viper.GetString(integrationAPIFqdnFlag), accessToken, ldifByte)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("LDIF successfully uploaded to Integration API: " + syncID)
+		runID, err := leanix.StartRun(viper.GetString(integrationAPIFqdnFlag), accessToken, syncID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("Integration API run " + runID + " successfully started.")
 	}
-	log.Info(accessToken)
 	log.Info("-----------End-----------")
 }
 
