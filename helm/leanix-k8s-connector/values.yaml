@@ -21,7 +21,7 @@ image:
 args:
   clustername: kubernetes
   connectorID: ""
-  connectorVersion: ""
+  connectorVersion: "1.0.0"
   lxWorkspace: ""
   verbose: false
   storageBackend: file

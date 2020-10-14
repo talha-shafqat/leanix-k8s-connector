@@ -15,6 +15,7 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
       - [Add LeanIX Kubernetes Connector Helm chart repository](#add-leanix-kubernetes-connector-helm-chart-repository)
       - [file storage backend](#file-storage-backend)
       - [azureblob storage backend](#azureblob-storage-backend)
+      - [Optional - POST call against LeanIX Integration API](#optional---post-call-against-leanix-integration-api)
   - [Known issues](#known-issues)
   - [Version history](#version-history)
 
@@ -168,22 +169,24 @@ Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the 
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
-| Parameter           | Default value             | Provided value       | Notes                                                                                                                                                                                                                                  |
-| ------------------- | ------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| clustername         | kubernetes                | aks-cluster          | The name of the Kubernetes cluster.                                                                                                                                                                                                    |
-| connectorID         | Random UUID               | aks-cluster          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default.                                                                                                                                            |
-| lxWorkspace         | ""                        | leanix               | The name of the LeanIX workspace the data is sent to. Must be provided.                                                                                                                                                                |
-| verbose             | false                     | true                 | Enables verbose logging on the stdout interface of the container.                                                                                                                                                                      |
-| storageBackend      | file                      |                      | The default value for the storage backend is `file`, if not provided.                                                                                                                                                                  |
-| localFilePath       | /mnt/leanix-k8s-connector |                      | The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                  |
-| claimName           | ""                        | azurefile            | The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                                                          |
-| blacklistNameSpaces | kube-system               | kube-system, default | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
+| Parameter           | Default value             | Provided value                       | Notes |
+| ------------------- | ------------------------- | ------------------------------------ | ----- |
+| schedule.standard   | */1 * * * *               |                                      | CronJob schedule. Defaults to every minute. |
+| clustername         | kubernetes                | aks-cluster                          | The name of the Kubernetes cluster. |
+| connectorID         | Random UUID               | aks-cluster                          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default. |
+| connectorVersion    | "1.0.0"                   |                                      | The version that is used in the LeanIX Integration API processor configuration. Defaults to 1.0.0. |
+| lxWorkspace         | ""                        | 00000000-0000-0000-0000-000000000000 | The UUID of the LeanIX workspace the data is sent to. |
+| verbose             | false                     | true                                 | Enables verbose logging on the stdout interface of the container. |
+| storageBackend      | file                      |                                      | The default value for the storage backend is `file`, if not provided. |
+| localFilePath       | /mnt/leanix-k8s-connector |                                      | The path that is used for mounting the PVC into the container and storing the `kubernetes.ldif` and `leanix-k8s-connector.log` files. |
+| claimName           | ""                        | azurefile                            | The name of the PVC used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files. |
+| blacklistNameSpaces | kube-system               | kube-system, default                 | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
---set args.lxWorkspace=leanix \
+--set args.lxWorkspace=00000000-0000-0000-0000-000000000000 \
 --set args.verbose=true \
 --set args.file.claimName=azurefile \
 --set args.blacklistNamespaces="{kube-system,default}"
@@ -193,11 +196,15 @@ Beside the option to override the default values and provide values via the `--s
 
 ``` yaml
 ...
-
+schedule:
+  standard: "*/1 * * * *"
+  integrationApi: "0 */1 * * *"
+...
 args:
   clustername: aks-cluster
   connectorID: aks-cluster
-  lxWorkspace: leanix
+  connectorVersion: "1.0.0"
+  lxWorkspace: "00000000-0000-0000-0000-000000000000"
   verbose: true
   storageBackend: file
   file:
@@ -209,7 +216,6 @@ args:
   blacklistNamespaces:
   - "kube-system"
   - "default"
-
 ...
 ```
 
@@ -231,22 +237,24 @@ Finally, we use the Helm chart deploying the LeanIX Kubernetes Connector to the 
 
 The following command deploys the connector to the Kubernetes cluster and overwrites the parameters in the `values.yaml` file.
 
-| Parameter           | Default value | Provided value       | Notes                                                                                                                                                                                                                                  |
-| ------------------- | ------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| clustername         | kubernetes    | aks-cluster          | The name of the Kubernetes cluster.                                                                                                                                                                                                    |
-| connectorID         | Random UUID   | aks-cluster          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default.                                                                                                                                            |
-| lxWorkspace         | ""            | leanix               | The name of the LeanIX workspace the data is sent to. Must be provided.                                                                                                                                                                |
-| verbose             | false         | true                 | Enables verbose logging on the stdout interface of the container.                                                                                                                                                                      |
-| storageBackend      | file          | azureblob            | The default value for the storage backend is `file`, if not provided.                                                                                                                                                                  |
-| secretName          | ""            | azure-secret         | The name of the Kubernetes secret containing the Azure Storage account credentials.                                                                                                                                                    |
-| container           | ""            | leanixk8sconnector   | The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files.                                                                                                                                    |
-| blacklistNameSpaces | kube-system   | kube-system, default | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
+| Parameter           | Default value | Provided value                       | Notes |
+| ------------------- | ------------- | ------------------------------------ | ----- |
+| schedule.standard   | */1 * * * *   |                                      | CronJob schedule. Defaults to every minute. |
+| clustername         | kubernetes    | aks-cluster                          | The name of the Kubernetes cluster. |
+| connectorID         | Random UUID   | aks-cluster                          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default. |
+| connectorVersion    | "1.0.0"       |                                      | The version that is used in the LeanIX Integration API processor configuration. Defaults to 1.0.0. |
+| lxWorkspace         | ""            | 00000000-0000-0000-0000-000000000000 | The UUID of the LeanIX workspace the data is sent to. |
+| verbose             | false         | true                                 | Enables verbose logging on the stdout interface of the container. |
+| storageBackend      | file          | azureblob                            | The default value for the storage backend is `file`, if not provided. |
+| secretName          | ""            | azure-secret                         | The name of the Kubernetes secret containing the Azure Storage account credentials. |
+| container           | ""            | leanixk8sconnector                   | The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files. |
+| blacklistNameSpaces | kube-system   | kube-system, default                 | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
 
 ``` bash
 helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
 --set args.clustername=aks-cluster \
 --set args.connectorID=aks-cluster \
---set args.lxWorkspace=leanix \
+--set args.lxWorkspace=00000000-0000-0000-0000-000000000000 \
 --set args.verbose=true \
 --set args.storageBackend=azureblob \
 --set args.azureblob.secretName=azure-secret \
@@ -258,11 +266,15 @@ Beside the option to override the default values and provide values via the `--s
 
 ``` yaml
 ...
-
+schedule:
+  standard: "*/1 * * * *"
+  integrationApi: "0 */1 * * *"
+...
 args:
   clustername: aks-cluster
   connectorID: aks-cluster
-  lxWorkspace: leanix
+  connectorVersion: "1.0.0"
+  lxWorkspace: "00000000-0000-0000-0000-000000000000"
   verbose: true
   storageBackend: azureblob
   file:
@@ -274,9 +286,12 @@ args:
   blacklistNamespaces:
   - "kube-system"
   - "default"
-
 ...
 ```
+
+#### Optional - POST call against LeanIX Integration API
+
+TBD
 
 ## Known issues
 
