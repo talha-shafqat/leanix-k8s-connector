@@ -250,9 +250,9 @@ func main() {
 			log.Fatal(err)
 		}
 		if runStatus == 200 {
-			log.Info("Integration API run successfully started.")
+			log.Infof("Integration API run successfully started. status: %d", runStatus)
 		} else {
-			log.Fatalf("Integration API run could not be started. status: %s", runStatus)
+			log.Fatalf("Integration API run could not be started. status: %d", runStatus)
 		}
 	}
 	log.Info("-----------End-----------")
