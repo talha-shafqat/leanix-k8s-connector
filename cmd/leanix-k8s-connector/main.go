@@ -226,8 +226,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("-----------End-----------")
-	err = uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+	err = uploader.UploadLdif(ldifByte)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -254,6 +253,11 @@ func main() {
 		} else {
 			log.Fatalf("Integration API run could not be started. status: %d", runStatus)
 		}
+	}
+	log.Debug("-----------End-----------")
+	err = uploader.UploadLog(debugLogBuffer.Bytes())
+	if err != nil {
+		log.Fatal(err)
 	}
 	log.Info("-----------End-----------")
 }
