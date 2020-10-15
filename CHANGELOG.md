@@ -1,5 +1,19 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2020-10-15 - 2.0.0-beta5
+
+### Release Notes
+
+* New Features
+  * Configure Kubernetes CronJob schedule
+  * Upload LDIF to LeanIX Integration API
+
+* Changes
+  * The `connectorVersion` field does not contain the build version anymore. It is now configurable by the user to match the LeanIX Integration API processor configuration version.
+  * The build version is moved to the section `customFields` and is mapped to the field `buildVersion` in the generated LDIF file.
+  * Split LDIF and log upload into independent tasks
+  * Use full container image path `docker.io/leanix/leanix-k8s-connector`
+
 ## Release 2020-06-15 - 2.0.0-beta4
 
 ### Release Notes
