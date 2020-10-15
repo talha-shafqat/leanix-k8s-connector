@@ -18,7 +18,8 @@ const (
 
 // Backend exposes a common interface for all storage mechanisms
 type Backend interface {
-	Upload(ldif []byte, log []byte) error
+	UploadLdif(ldif []byte) error
+	UploadLog(log []byte) error
 }
 
 // NewBackend create a new storage backend for the given storage backend type

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/leanix/leanix-k8s-connector/pkg/kubernetes"
+	"github.com/leanix/leanix-k8s-connector/pkg/leanix"
 	"github.com/leanix/leanix-k8s-connector/pkg/mapper"
 	"github.com/leanix/leanix-k8s-connector/pkg/storage"
 	"github.com/leanix/leanix-k8s-connector/pkg/version"
@@ -33,6 +34,10 @@ const (
 	localFilePathFlag       string = "local-file-path"
 	verboseFlag             string = "verbose"
 	connectorIDFlag         string = "connector-id"
+	connectorVersionFlag    string = "connector-version"
+	integrationAPIFlag      string = "integration-api-enabled"
+	integrationAPIFqdnFlag  string = "integration-api-fqdn"
+	integrationAPITokenFlag string = "integration-api-token"
 	blacklistNamespacesFlag string = "blacklist-namespaces"
 	lxWorkspaceFlag         string = "lx-workspace"
 	localFlag               string = "local"
@@ -50,7 +55,7 @@ func main() {
 	}
 	enableVerbose(stdoutLogger, viper.GetBool(verboseFlag))
 	log.Info("----------Start----------")
-	log.Infof("LeanIX connector version: %s", version.VERSION)
+	log.Infof("LeanIX Kubernetes connector build version: %s", version.VERSION)
 	log.Infof("LeanIX integration version: %s", lxVersion)
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
 	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
@@ -187,17 +192,19 @@ func main() {
 
 	customFields := mapper.CustomFields{
 		ConnectorInstance: viper.GetString(connectorIDFlag),
+		BuildVersion:      version.VERSION,
 	}
 
 	ldif := mapper.LDIF{
-		ConnectorID:      "Kubernetes",
-		ConnectorType:    "leanix-k8s-connector",
-		ConnectorVersion: version.VERSION,
-		LxVersion:        lxVersion,
-		LxWorkspace:      viper.GetString(lxWorkspaceFlag),
-		Description:      "Map Kubernetes objects to LeanIX Fact Sheets",
-		CustomFields:     customFields,
-		Content:          kubernetesObjects,
+		ConnectorID:         "Kubernetes",
+		ConnectorType:       "leanix-k8s-connector",
+		ConnectorVersion:    viper.GetString(connectorVersionFlag),
+		ProcessingDirection: "inbound",
+		LxVersion:           lxVersion,
+		LxWorkspace:         viper.GetString(lxWorkspaceFlag),
+		Description:         "Map Kubernetes objects to LeanIX Fact Sheets",
+		CustomFields:        customFields,
+		Content:             kubernetesObjects,
 	}
 
 	log.Debug("Marshal ldif")
@@ -219,8 +226,36 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = uploader.UploadLdif(ldifByte)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if viper.GetBool(integrationAPIFlag) == true {
+		accessToken, err := leanix.Authenticate(viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("Integration API authentication successfully.")
+		syncRun, err := leanix.Upload(viper.GetString(integrationAPIFqdnFlag), accessToken, ldifByte)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if syncRun.ID == "" {
+			log.Fatal("Failed to upload LDIF. Check if connectorId, connectorType, and connectorVersion matches Integration API processor configuration. Ensure lxWorkspace is set to your workspace's UUID.")
+		}
+		log.Infof("LDIF successfully uploaded to Integration API. id: %s", syncRun.ID)
+		runStatus, err := leanix.StartRun(viper.GetString(integrationAPIFqdnFlag), accessToken, syncRun.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if runStatus == 200 {
+			log.Infof("Integration API run successfully started. status: %d", runStatus)
+		} else {
+			log.Fatalf("Integration API run could not be started. status: %d", runStatus)
+		}
+	}
 	log.Debug("-----------End-----------")
-	err = uploader.Upload(ldifByte, debugLogBuffer.Bytes())
+	err = uploader.UploadLog(debugLogBuffer.Bytes())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -243,6 +278,10 @@ func parseFlags() error {
 	flag.String(localFilePathFlag, ".", "path to place the ldif file when using local file storage backend")
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
+	flag.String(connectorVersionFlag, "1.0.0", "connector version defaults to 1.0.0 if not specified")
+	flag.Bool(integrationAPIFlag, false, "enable Integration API usage")
+	flag.String(integrationAPIFqdnFlag, "app.leanix.net", "LeanIX Instance FQDN")
+	flag.String(integrationAPITokenFlag, "", "LeanIX API token")
 	flag.StringSlice(blacklistNamespacesFlag, []string{""}, "list of namespaces that are not scanned")
 	flag.String(lxWorkspaceFlag, "", "name of the LeanIX workspace the data is sent to")
 	flag.Bool(localFlag, false, "use local kubeconfig from home folder")
@@ -264,6 +303,22 @@ func parseFlags() error {
 	}
 	if viper.GetString(lxWorkspaceFlag) == "" {
 		return fmt.Errorf("%s flag must be set", lxWorkspaceFlag)
+	}
+	if viper.GetString(storageBackendFlag) == "azureblob" {
+		if viper.GetString(azureAccountNameFlag) == "" {
+			return fmt.Errorf("%s flag must be set", azureAccountNameFlag)
+		}
+		if viper.GetString(azureAccountKeyFlag) == "" {
+			return fmt.Errorf("%s flag must be set", azureAccountKeyFlag)
+		}
+		if viper.GetString(azureContainerFlag) == "" {
+			return fmt.Errorf("%s flag must be set", azureContainerFlag)
+		}
+	}
+	if viper.GetBool(integrationAPIFlag) == true {
+		if viper.GetString(integrationAPITokenFlag) == "" {
+			return fmt.Errorf("%s flag must be set", integrationAPITokenFlag)
+		}
 	}
 	return nil
 }

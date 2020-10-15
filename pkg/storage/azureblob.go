@@ -50,13 +50,19 @@ func NewAzureBlob(azureOpts *AzureBlobOpts) (*AzureContainer, error) {
 	return u, nil
 }
 
-// Upload uploads a file to azure blob storage
-func (u *AzureContainer) Upload(ldif []byte, log []byte) error {
+// Upload uploads the LDIF file to azure blob storage
+func (u *AzureContainer) UploadLdif(ldif []byte) error {
 	err := u.uploadFile(LdifFileName, ldif)
 	if err != nil {
 		return err
 	}
-	err = u.uploadFile(LogFileName, log)
+
+	return nil
+}
+
+// Upload uploads the log file to azure blob storage
+func (u *AzureContainer) UploadLog(log []byte) error {
+	err := u.uploadFile(LogFileName, log)
 	if err != nil {
 		return err
 	}
