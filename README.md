@@ -64,17 +64,17 @@ Before you can install the LeanIX Kubernetes Connector make sure that the follow
 - [helm client is installed](https://helm.sh/docs/using_helm/#installing-the-helm-client)
 - [git is installed](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-#### Pre-release versions
+#### **Pre-release versions**
 
 If you want to install pre-release versions of the LeanIX Kubernetes Connector, append the `helm` CLI commands with `--devel`.
 
-#### Helm 2 requirements
+#### **Helm 2 requirements**
 
 On the server-side the Helm server component Tiller must be deployed into the Kubernetes cluster, when you are not using Helm 3.
 
 - [Installing Tiller](https://helm.sh/docs/using_helm/#installing-tiller)
 
-#### Add LeanIX Kubernetes Connector Helm chart repository
+#### **Add LeanIX Kubernetes Connector Helm chart repository**
 
 Before you can install the LeanIX Kubernetes Connector via the provided Helm chart you must add the Helm chart repository first.
 
@@ -100,7 +100,7 @@ NAME                                        CHART VERSION APP VERSION DESCRIPTIO
 leanix/leanix-k8s-connector                 1.0.0         1.0.0       Retrieves information from Kubernetes cluster
 ```
 
-#### file storage backend
+#### **file storage backend**
 
 The first step to get started with the `file` storage backend type is to create the PersistentVolume and PersistentVolumeClaim in advance.
 
@@ -219,7 +219,7 @@ args:
 ...
 ```
 
-#### azureblob storage backend
+#### **azureblob storage backend**
 
 The first step to get started with the `azureblob` storage backend type is to create an Azure Storage account as described in the Azure documentation.
 
@@ -289,9 +289,88 @@ args:
 ...
 ```
 
-#### Optional - POST call against LeanIX Integration API
+#### **Optional - POST call against LeanIX Integration API**
 
-TBD
+As an additional option to the `file` and `azureblog` storage backend the LeanIX Kubernetes Connector starts supporting with version `2.0.0-beta5` an optional POST call against the LeanIX Integration API.
+
+This additional option lets you upload the generated LDIF to the LeanIX Integration API and starts after a successful upload a synchronization run.
+
+> **_NOTE:_** You still need to configure a `file` or `azureblob` storage backend for storing the LeanIX Kubernetes Connector log file. You cannot use the LeanIX Integration API option without one of these options.
+
+For configuring one of the mentioned storage backend options click on [file storage backend](#file-storage-backend) or [azureblob storage backend](#azureblob-storage-backend).
+
+> **_NOTE:_** The LeanIX Integration API options requies an API token. See the LeanIX technical documentation on how to obtain one. [LeanIX Technical Documentation](https://dev.leanix.net/docs/authentication#section-generate-api-tokens)
+
+Create a Kubernetes secret with the LeanIX API token.
+
+``` bash
+kubectl create secret generic api-token --from-literal=token={LEANIX_API_TOKEN}
+```
+
+The following configuration example assumes that you use the `azureblob` storage backend.
+
+| Parameter                 | Default value | Provided value                       | Notes |
+| ------------------------- | ------------- | ------------------------------------ | ----- |
+| integrationApi.enabled    | false         | true                                 | Enables the LeanIX Integration API option |
+| integrationApi.fqdn       | ""            | app.leanix.net                       | The FQDN of your LeanIX instance |
+| integrationApi.secretName | ""            | api-token                            | The name of the Kubernetes secret containing the LeanIX API token. |
+| schedule.integrationApi   | 0 */1 * * *   |                                      | CronJob schedule. Defaults to every hour, when you enabled the LeanIX Integration API option. |
+| clustername               | kubernetes    | aks-cluster                          | The name of the Kubernetes cluster. |
+| connectorID               | Random UUID   | aks-cluster                          | The name of the Kubernetes cluster. If not provided a random UUID is generated per default. |
+| connectorVersion          | "1.0.0"       |                                      | The version that is used in the LeanIX Integration API processor configuration. Defaults to 1.0.0. |
+| lxWorkspace               | ""            | 00000000-0000-0000-0000-000000000000 | The UUID of the LeanIX workspace the data is sent to. |
+| verbose                   | false         | true                                 | Enables verbose logging on the stdout interface of the container. |
+| storageBackend            | file          | azureblob                            | The default value for the storage backend is `file`, if not provided. |
+| secretName                | ""            | azure-secret                         | The name of the Kubernetes secret containing the Azure Storage account credentials. |
+| container                 | ""            | leanixk8sconnector                   | The name of the container used to store the `kubernetes.ldif` and `leanix-k8s-connector.log` files. |
+| blacklistNameSpaces       | kube-system   | kube-system, default                 | Namespaces that are not scanned by the connector. Must be provided in the format `"{kube-system,default}"` when using the `--set` option. Wildcard blacklisting is also supported e.g. `"{kube-*,default}"` or `"{*-system,default}"`. |
+
+``` bash
+helm upgrade --install leanix-k8s-connector leanix/leanix-k8s-connector \
+--set integrationApi.enabled=true \
+--set integrationApi.fqdn=app.leanix.net \
+--set integrationApi.secretName=api-token \
+--set args.clustername=aks-cluster \
+--set args.connectorID=aks-cluster \
+--set args.lxWorkspace=00000000-0000-0000-0000-000000000000 \
+--set args.verbose=true \
+--set args.storageBackend=azureblob \
+--set args.azureblob.secretName=azure-secret \
+--set args.azureblob.container=leanixk8sconnector \
+--set args.blacklistNamespaces="{kube-system,default}"
+```
+
+Beside the option to override the default values and provide values via the `--set` option of the `helm` command, you can also edit the `values.yaml` file.
+
+``` yaml
+...
+integrationApi:
+  enabled: true
+  fqdn: "app.leanix.net"
+  secretName: "api-token"
+
+schedule:
+  standard: "*/1 * * * *"
+  integrationApi: "0 */1 * * *"
+...
+args:
+  clustername: aks-cluster
+  connectorID: aks-cluster
+  connectorVersion: "1.0.0"
+  lxWorkspace: "00000000-0000-0000-0000-000000000000"
+  verbose: true
+  storageBackend: azureblob
+  file:
+    localFilePath: "/mnt/leanix-k8s-connector"
+    claimName: ""
+  azureblob:
+    secretName: "azure-secret"
+    container: "leanixk8sconnector"
+  blacklistNamespaces:
+  - "kube-system"
+  - "default"
+...
+```
 
 ## Known issues
 
