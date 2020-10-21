@@ -3,6 +3,7 @@ package leanix
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -37,6 +38,10 @@ func Authenticate(fqdn string, token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if resp.StatusCode != 200 {
+		err := fmt.Errorf("Integration API authentication failed: %s", resp.Status)
+		return "", err
+	}
 	defer resp.Body.Close()
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -60,6 +65,12 @@ func Upload(fqdn string, accessToken string, ldif []byte) (SyncRunResponse, erro
 	if err != nil {
 		return SyncRunResponse{"", "", ""}, err
 	}
+	if resp.StatusCode != 200 {
+		err := fmt.Errorf("Failed to upload LDIF: %s\n"+
+			"-> Check if connectorId, connectorType, and connectorVersion matches Integration API processor configuration.\n"+
+			"-> Ensure lxWorkspace is set to your workspace's UUID.", resp.Status)
+		return SyncRunResponse{"", "", ""}, err
+	}
 	defer resp.Body.Close()
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -80,7 +91,11 @@ func StartRun(fqdn string, accessToken string, id string) (int, error) {
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return resp.StatusCode, err
+		return 0, err
+	}
+	if resp.StatusCode != 200 {
+		err := fmt.Errorf("Integration API run could not be started: %s", resp.Status)
+		return 0, err
 	}
 	defer resp.Body.Close()
 	return resp.StatusCode, nil
