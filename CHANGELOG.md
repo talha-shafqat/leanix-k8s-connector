@@ -1,5 +1,12 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2020-10-21 - 2.0.0-beta6
+
+### Release Notes
+
+* Changes
+  * Improved error logging for LeaniX Integration API integration
+
 ## Release 2020-10-15 - 2.0.0-beta5
 
 ### Release Notes
