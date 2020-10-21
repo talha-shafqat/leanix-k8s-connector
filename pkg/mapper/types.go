@@ -19,6 +19,7 @@ type LDIF struct {
 	ConnectorType       string             `json:"connectorType,omitempty"`
 	ConnectorVersion    string             `json:"connectorVersion,omitempty"`
 	ProcessingDirection string             `json:"processingDirection,omitempty"`
+	ProcessingMode      string             `json:"processingMode,omitempty"`
 	LxVersion           string             `json:"lxVersion,omitempty"`
 	LxWorkspace         string             `json:"lxWorkspace,omitempty"`
 	Description         string             `json:"description,omitempty"`

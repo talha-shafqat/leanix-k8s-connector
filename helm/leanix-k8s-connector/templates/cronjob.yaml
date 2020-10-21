@@ -61,6 +61,8 @@ spec:
               value: "{{ .Values.args.connectorID | default uuidv4 }}"
             - name: CONNECTOR_VERSION
               value: "{{ .Values.args.connectorVersion }}"
+            - name: PROCESSING_MODE
+              value: "{{ .Values.args.processingMode" }}"
             - name: BLACKLIST_NAMESPACES
               value: "{{ .Values.args.blacklistNamespaces | join ", " }}"
             {{- if .Values.integrationApi.enabled }}

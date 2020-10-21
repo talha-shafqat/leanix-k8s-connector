@@ -26,24 +26,30 @@ import (
 )
 
 const (
-	clusterNameFlag         string = "clustername"
-	storageBackendFlag      string = "storage-backend"
-	azureAccountNameFlag    string = "azure-account-name"
-	azureAccountKeyFlag     string = "azure-account-key"
-	azureContainerFlag      string = "azure-container"
-	localFilePathFlag       string = "local-file-path"
-	verboseFlag             string = "verbose"
-	connectorIDFlag         string = "connector-id"
-	connectorVersionFlag    string = "connector-version"
-	integrationAPIFlag      string = "integration-api-enabled"
-	integrationAPIFqdnFlag  string = "integration-api-fqdn"
-	integrationAPITokenFlag string = "integration-api-token"
-	blacklistNamespacesFlag string = "blacklist-namespaces"
-	lxWorkspaceFlag         string = "lx-workspace"
-	localFlag               string = "local"
+	clusterNameFlag             string = "clustername"
+	storageBackendFlag          string = "storage-backend"
+	azureAccountNameFlag        string = "azure-account-name"
+	azureAccountKeyFlag         string = "azure-account-key"
+	azureContainerFlag          string = "azure-container"
+	localFilePathFlag           string = "local-file-path"
+	verboseFlag                 string = "verbose"
+	connectorIDFlag             string = "connector-id"
+	connectorVersionFlag        string = "connector-version"
+	connectorProcessingModeFlag string = "processing-mode"
+	integrationAPIFlag          string = "integration-api-enabled"
+	integrationAPIFqdnFlag      string = "integration-api-fqdn"
+	integrationAPITokenFlag     string = "integration-api-token"
+	blacklistNamespacesFlag     string = "blacklist-namespaces"
+	lxWorkspaceFlag             string = "lx-workspace"
+	localFlag                   string = "local"
 )
 
-const lxVersion string = "1.0.0"
+const (
+	lxVersion                      string = "1.0.0"
+	lxConnectorID                  string = "Kubernetes"
+	lxConnectorType                string = "leanix-k8s-connector"
+	lxConnectorProcessingDirection string = "inbound"
+)
 
 var log = logging.MustGetLogger("leanix-k8s-connector")
 
@@ -57,6 +63,11 @@ func main() {
 	log.Info("----------Start----------")
 	log.Infof("LeanIX Kubernetes connector build version: %s", version.VERSION)
 	log.Infof("LeanIX integration version: %s", lxVersion)
+	log.Infof("LeanIX connector id: %s", lxConnectorID)
+	log.Infof("LeanIX connector type: %s", lxConnectorType)
+	log.Infof("LeanIX connector version: %s", viper.GetString(connectorVersionFlag))
+	log.Infof("LeanIX connector processing direction: %s", lxConnectorProcessingDirection)
+	log.Infof("LeanIX connector processing mode: %s", viper.GetString(connectorProcessingModeFlag))
 	log.Infof("Target LeanIX workspace: %s", viper.GetString(lxWorkspaceFlag))
 	log.Infof("Target Kubernetes cluster name: %s", viper.GetString(clusterNameFlag))
 
@@ -196,10 +207,11 @@ func main() {
 	}
 
 	ldif := mapper.LDIF{
-		ConnectorID:         "Kubernetes",
-		ConnectorType:       "leanix-k8s-connector",
+		ConnectorID:         lxConnectorID,
+		ConnectorType:       lxConnectorType,
 		ConnectorVersion:    viper.GetString(connectorVersionFlag),
-		ProcessingDirection: "inbound",
+		ProcessingDirection: lxConnectorProcessingDirection,
+		ProcessingMode:      viper.GetString(connectorProcessingModeFlag),
 		LxVersion:           lxVersion,
 		LxWorkspace:         viper.GetString(lxWorkspaceFlag),
 		Description:         "Map Kubernetes objects to LeanIX Fact Sheets",
@@ -272,6 +284,7 @@ func parseFlags() error {
 	flag.Bool(verboseFlag, false, "verbose log output")
 	flag.String(connectorIDFlag, "", "unique id of the LeanIX Kubernetes connector")
 	flag.String(connectorVersionFlag, "1.0.0", "connector version defaults to 1.0.0 if not specified")
+	flag.String(connectorProcessingModeFlag, "partial", "processing mode defaults to partial if not specified")
 	flag.Bool(integrationAPIFlag, false, "enable Integration API usage")
 	flag.String(integrationAPIFqdnFlag, "app.leanix.net", "LeanIX Instance FQDN")
 	flag.String(integrationAPITokenFlag, "", "LeanIX API token")
