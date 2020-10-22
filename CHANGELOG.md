@@ -1,11 +1,18 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2020-10-22 - 2.0.0-beta7
+
+### Release Notes
+
+* Changes
+  * Add `processingMode` field to generated LDIF file as this is required when processing mode in the Integration API processor configuration is set to `full`.
+
 ## Release 2020-10-21 - 2.0.0-beta6
 
 ### Release Notes
 
 * Changes
-  * Improved error logging for LeaniX Integration API integration
+  * Improved error logging for LeanIX Integration API integration
 
 ## Release 2020-10-15 - 2.0.0-beta5
 
