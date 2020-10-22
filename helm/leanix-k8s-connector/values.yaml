@@ -22,6 +22,7 @@ args:
   clustername: kubernetes
   connectorID: ""
   connectorVersion: "1.0.0"
+  processingMode: partial
   lxWorkspace: ""
   verbose: false
   storageBackend: file
