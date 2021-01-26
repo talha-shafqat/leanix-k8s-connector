@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 rbac: true
+clusterRoleAlreadyCreated: false
 
 integrationApi:
   enabled: false
@@ -17,6 +18,10 @@ image:
   repository: docker.io/leanix/leanix-k8s-connector
   tag: 2.0.0-beta7
   pullPolicy: Always
+
+securityContext:
+  userId: 65534
+  groupId: 65534
 
 args:
   clustername: kubernetes
