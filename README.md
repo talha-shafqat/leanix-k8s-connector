@@ -16,6 +16,7 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
       - [file storage backend](#file-storage-backend)
       - [azureblob storage backend](#azureblob-storage-backend)
       - [Optional - POST call against LeanIX Integration API](#optional---post-call-against-leanix-integration-api)
+      - [Optional - Advanced deployment settings](#advanced---customizable-deployment-settings)
   - [Known issues](#known-issues)
   - [Version history](#version-history)
 
@@ -374,6 +375,26 @@ args:
   blacklistNamespaces:
   - "kube-system"
   - "default"
+...
+```
+
+#### **Optional - Advanced deployment settings**
+
+Depending on your corporate policies / permission set the creation of ClusterRoles or ClusterRoleBindings are done beforehand. You then can set in the `values.yaml` the following setting to `true`.
+
+``` yaml
+...
+clusterRoleAlreadyCreated: true
+...
+```
+
+Furthermore, when you use different user ids and group ids in your environment than the provided default. You can set them in the `values.yaml`.
+
+``` yaml
+...
+securityContext:
+  userId: 1337
+  groupId: 1337
 ...
 ```
 
