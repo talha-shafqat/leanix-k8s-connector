@@ -39,6 +39,10 @@ args:
     container: ""
   blacklistNamespaces:
   - "kube-system"
+  additionalEnv:
+    FOO: "BAR"
+    HTTP_PROXY: "CHANGEME"
+    HTTPS_PROXY: "CHANGEME"
 
 nameOverride: ""
 fullnameOverride: ""

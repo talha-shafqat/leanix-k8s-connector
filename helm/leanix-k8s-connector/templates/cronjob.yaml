@@ -76,6 +76,10 @@ spec:
                   name: "{{ .Values.integrationApi.secretName }}"
                   key: token
             {{- end }}
+            {{- range $key, $val := .Values.args.additionalEnv }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
             resources:
               requests:
                 cpu: {{ .Values.resources.requests.cpu }}
