@@ -39,6 +39,7 @@ args:
     container: ""
   blacklistNamespaces:
   - "kube-system"
+  additionalEnv: {}
 
 nameOverride: ""
 fullnameOverride: ""
