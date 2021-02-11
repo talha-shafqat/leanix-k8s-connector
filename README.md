@@ -380,7 +380,7 @@ args:
 
 #### **Optional - Advanced deployment settings**
 
-Depending on your corporate policies / permission set the creation of ClusterRoles or ClusterRoleBindings are done beforehand. You then can set in the `values.yaml` the following setting to `true`.
+Depending on your corporate policies / permission set the creation of ClusterRoles or ClusterRoleBindings are done beforehand. You then can set in the `values.yaml` the following setting to `true` or use `--set` when installing the Helm chart to override the default value.
 
 ``` yaml
 ...
@@ -388,13 +388,24 @@ clusterRoleAlreadyCreated: true
 ...
 ```
 
-Furthermore, when you use different user ids and group ids in your environment than the provided default. You can set them in the `values.yaml`.
+Furthermore, when you use different user ids and group ids in your environment than the provided default. You can set them in the `values.yaml` or use `--set` when installing the Helm chart to override the default values.
 
 ``` yaml
 ...
 securityContext:
   userId: 1337
   groupId: 1337
+...
+```
+
+If you are in need to provide additional ENV values you can do so by setting them in the `values.yaml` or use `--set` when installing the Helm chart to override the default values.
+
+``` yaml
+...
+args:
+...
+  additionalEnv:
+    FOO: "BAR"
 ...
 ```
 
