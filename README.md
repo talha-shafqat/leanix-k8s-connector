@@ -17,6 +17,7 @@ The LeanIX Kubernetes Connector collects information from Kubernetes.
       - [azureblob storage backend](#azureblob-storage-backend)
       - [Optional - POST call against LeanIX Integration API](#optional---post-call-against-leanix-integration-api)
       - [Optional - Advanced deployment settings](#advanced---customizable-deployment-settings)
+    - [Setting up development environment](#developer-environment-setup)
   - [Known issues](#known-issues)
   - [Version history](#version-history)
 
@@ -408,6 +409,49 @@ args:
     FOO: "BAR"
 ...
 ```
+
+### Developer Environment Setup
+The connector can be published to a minikube instance
+
+## Steps
+1. install minikube
+2. If already installed make sure you run
+    > `minikube delete`
+3. Start minikube instance
+   > `minikube start --insecure-registry="<your-ip eg:192. ..>:5000"`
+4. Open minikube dashboard
+   >  `minikube dashboard`
+
+By default, The cronJob pulls the image from docker hub. To override the behaviour:
+
+1. Install local docker image registry (https://www.docker.com/blog/how-to-use-your-own-registry-2/)
+2. Run registry locally
+   > `docker run -d -p 5000:5000 --name registry registry:2.7`
+3. Use Makefile.local
+    > `
+        make -f Makefile.local clean build image
+        docker tag leanix-dev/leanix-k8s-connector localhost:5000/leanix-dev/leanix-k8s-connector:1.0.0-dev
+        docker push localhost:5000/leanix-dev/leanix-k8s-connector:1.0.0-dev
+    `
+   
+   - or `make -f Makefile.local local`
+4. Finally, run the command
+
+    > `
+    helm upgrade --install --devel leanix-k8s-connector leanix/leanix-k8s-connector \
+    --set image.repository=192.168.29.244:5000/leanix-dev/leanix-k8s-connector  \
+    --set image.tag=1.0.0-dev \
+    --set args.clustername=minikube \
+    --set args.connectorID=minikube \
+    --set args.lxWorkspace=00000000-0000-0000-0000-000000000000 \
+    --set args.verbose=true \
+    --set args.storageBackend=azureblob \
+    --set args.azureblob.secretName=azure-secret \
+    --set args.azureblob.container=leanixk8sconnector \
+    --set args.blacklistNamespaces="{kube-system}"
+    `
+
+Make sure you are using `--devel` flag to get the latest helm chart version
 
 ## Known issues
 
