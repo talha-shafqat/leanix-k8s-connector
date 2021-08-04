@@ -1,5 +1,12 @@
 # LeanIX Kubernetes Connector Changelog
 
+## Release 2021-08-04 - 3.0.0
+
+### Release Notes
+
+* Changes
+  * Updated default Integration API connector version and processor type values
+
 ## Release 2021-06-21 - 2.0.0
 
 ### Release Notes
