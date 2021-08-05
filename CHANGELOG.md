@@ -5,7 +5,9 @@
 ### Release Notes
 
 * Changes
-  * Updated default Integration API connector version and processor type values
+  * Updated Integration API connector version and processor type default values to:
+    * args.connectorVersion = 1.1.1
+    * args.processingMode = full
 
 ## Release 2021-06-21 - 2.0.0
 
