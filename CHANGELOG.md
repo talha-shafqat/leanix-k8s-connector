@@ -6,8 +6,8 @@
 
 * Changes
   * Updated Integration API connector version and processor type default values to:
-    * args.connectorVersion = 1.1.1
-    * args.processingMode = full
+    * args.connectorVersion =  1.0.0 -> 1.1.1
+    * args.processingMode = partial -> full
 
 ## Release 2021-06-21 - 2.0.0
 
