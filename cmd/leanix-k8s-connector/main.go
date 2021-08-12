@@ -243,6 +243,8 @@ func main() {
 		log.Fatal(err)
 	}
 	if viper.GetBool(integrationAPIFlag) == true {
+		log.Infof("========================Test run ================================="))
+		log.Infof("FQDN: %s , APIKEY %s", viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
 		accessToken, err := leanix.Authenticate(viper.GetString(integrationAPIFqdnFlag), viper.GetString(integrationAPITokenFlag))
 		if err != nil {
 			log.Fatal(err)
